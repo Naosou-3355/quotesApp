@@ -668,60 +668,24 @@
       text-align: center;
     }
 
-    .load-icon { font-size: 44px; opacity: 0.7; }
-
     .load-title {
-      font-size: 13px;
-      font-weight: 700;
+      font-size: 11px;
+      font-weight: 500;
       letter-spacing: 3px;
       text-transform: uppercase;
-      color: var(--accent);
-      font-family: var(--font-mono);
-    }
-    .load-title::before { content: '// '; color: var(--text-dim); font-weight: 300; }
-
-    .load-subtitle {
-      font-size: 12px;
-      color: var(--text-dim);
-      line-height: 1.8;
-      font-family: var(--font-mono);
-      max-width: 320px;
-    }
-
-    .btn-upload {
-      padding: 14px 24px;
-      border-radius: var(--radius);
-      border: 1px dashed var(--accent);
-      background: var(--accent-dim);
-      color: var(--accent);
-      font-family: var(--font-mono);
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 1.5px;
-      cursor: pointer;
-      transition: all 0.15s;
-      width: 100%;
-      text-transform: uppercase;
-      box-shadow: var(--accent-glow);
-    }
-    .btn-upload:active { background: var(--accent); color: var(--bg); }
-
-    #file-input { display: none; }
-
-    .demo-btn {
-      padding: 12px;
-      border-radius: var(--radius-sm);
-      border: 1px solid var(--border);
-      background: transparent;
       color: var(--text-dim);
       font-family: var(--font-mono);
-      font-size: 11px;
-      letter-spacing: 1px;
-      cursor: pointer;
-      width: 100%;
-      transition: border-color 0.15s, color 0.15s;
     }
-    .demo-btn:hover { border-color: var(--green); color: var(--green); }
+    .load-title::before { content: '// '; color: var(--border); }
+
+    .load-spinner {
+      width: 32px; height: 32px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
 
     /* ── TOAST ── */
     .toast {
@@ -780,25 +744,14 @@
     <span class="app-name" id="app-title">quotes</span>
     <div class="header-actions">
       <button class="icon-btn" onclick="openHistorySheet()" title="Favoris">♡</button>
-      <button class="icon-btn" onclick="showLoadScreen()" title="Charger données">⊞</button>
     </div>
   </header>
 
   <!-- SCREEN : DATA LOAD -->
   <div class="screen active" id="no-data-screen">
     <div class="load-area">
-      <div class="load-icon">◈</div>
-      <div class="load-title">init.data</div>
-      <div class="load-subtitle">Importez votre fichier CSV/TSV depuis Google Sheets, ou lancez la démonstration.</div>
-      <button class="btn-upload" onclick="document.getElementById('file-input').click()">
-        import_file( CSV | TSV | JSON )
-      </button>
-      <input type="file" id="file-input" accept=".csv,.tsv,.json" onchange="handleFileLoad(event)" />
-      <button class="demo-btn" onclick="loadDemoData()">run_demo() → 12 phrases</button>
-      <p style="font-size:11px;color:var(--text-dim);line-height:2;font-family:var(--font-mono);">
-        <span style="color:var(--green)">// recommandé :</span> évite les bugs virgules<br>
-        Google Sheets → Fichier → Télécharger → <strong style="color:var(--text)">TSV</strong>
-      </p>
+      <div class="load-spinner"></div>
+      <div class="load-title">loading data.json</div>
     </div>
   </div>
 
@@ -985,116 +938,21 @@ function formatDate(str) {
 }
 
 // ═══════════════════════════════════════════════
-//  DATA LOADING
+// ═══════════════════════════════════════════════
+//  DATA LOADING — fetch depuis GitHub Pages
 // ═══════════════════════════════════════════════
 
-/**
- * Détecte l'encodage et parse le fichier de manière robuste.
- *
- * Stratégie CSV/TSV :
- *  1. Si l'extension est .tsv → séparateur tabulation
- *  2. Sinon on laisse PapaParse détecter automatiquement le séparateur
- *     (il teste virgule, point-virgule, tabulation)
- *  3. Les guillemets doubles autour des champs (standard RFC 4180) sont
- *     gérés nativement par PapaParse → virgules dans les phrases OK.
- *  4. Lecture en ArrayBuffer pour détecter le BOM UTF-8 (0xEF 0xBB 0xBF)
- *     produit par Google Sheets et Excel → décodage propre des accents.
- */
-function handleFileLoad(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-
-  // Réinitialise l'input pour permettre de recharger le même fichier
-  e.target.value = '';
-
-  const isTsv  = file.name.endsWith('.tsv');
-  const isJson = file.name.endsWith('.json');
-
-  // On lit en ArrayBuffer pour gérer le BOM manuellement
-  const reader = new FileReader();
-  reader.onload = ev => {
-    try {
-      const buffer = ev.target.result;
-
-      if (isJson) {
-        const text = decodeBuffer(buffer);
-        const data = JSON.parse(text);
-        initData(Array.isArray(data) ? data : data.data || []);
-        return;
-      }
-
-      const text = decodeBuffer(buffer);
-
-      const papaOpts = {
-        header: true,
-        skipEmptyLines: true,
-        quoteChar: '"',      // RFC 4180 : guillemets doubles encadrent les champs avec virgules
-        escapeChar: '"',     // guillemet double doublé = guillemet littéral dans le champ
-        dynamicTyping: false, // tout en chaîne, on gère les types nous-mêmes
-        transformHeader: h => h.trim(), // supprime les espaces parasites en en-tête
-        transform: v => v.trim(),       // supprime les espaces parasites dans les valeurs
-      };
-
-      if (isTsv) {
-        papaOpts.delimiter = '\t';
-      } else {
-        // Détection automatique : PapaParse teste ',', ';', '\t', '|'
-        papaOpts.delimiter = '';
-      }
-
-      const result = Papa.parse(text, papaOpts);
-
-      if (result.errors.length) {
-        console.warn('PapaParse warnings:', result.errors);
-        // On continue quand même si des données ont été parsées
-      }
-
-      if (!result.data.length) {
-        showToast('❌ Fichier vide ou non reconnu');
-        return;
-      }
-
-      initData(result.data);
-
-    } catch(err) {
-      console.error(err);
-      showToast('❌ Erreur de lecture — vérifiez le format du fichier');
-    }
-  };
-
-  reader.readAsArrayBuffer(file);
-}
-
-/**
- * Décode un ArrayBuffer en texte UTF-8 en gérant le BOM (Byte Order Mark).
- * Google Sheets et Excel ajoutent parfois 3 octets BOM en début de fichier
- * (0xEF 0xBB 0xBF) qui sinon s'affichent comme le caractère ï»¿ en début
- * de première colonne et cassent la reconnaissance des en-têtes.
- */
-function decodeBuffer(buffer) {
-  const bytes = new Uint8Array(buffer);
-  // Détecte BOM UTF-8
-  const hasBom = bytes[0] === 0xEF && bytes[1] === 0xBB && bytes[2] === 0xBF;
-  const slice  = hasBom ? buffer.slice(3) : buffer;
-  return new TextDecoder('utf-8').decode(slice);
-}
-
-function loadDemoData() {
-  const demo = [
-    { 'Horodateur':'15/03/2024 21:34:00','Insert quote':'Pourquoi faire simple quand on peut faire compliqué, et finalement regretter les deux ?','Insert name (e.g: John. D)':'Alex. M','Insert location':'Salon de Tom','Main category':'Philosophie','Second category':'Humour','Under alcohol ?':'Oui','Context':'Discussion post-dîner','Si wam, avec qui ?':'Tom, Julie' },
-    { 'Horodateur':'20/04/2024 23:11:00','Insert quote':'J\'avais un plan, mais je l\'ai perdu dans ma troisième bière.','Insert name (e.g: John. D)':'Julie. R','Insert location':'Bar du Coin','Main category':'Humour','Second category':'Soirée','Under alcohol ?':'Oui','Context':'Soirée d\'anniversaire','Si wam, avec qui ?':'Alex, Tom, Léa' },
-    { 'Horodateur':'02/05/2024 14:22:00','Insert quote':'Le soleil se couche mais nos ambitions restent debout, du moins jusqu\'à ce qu\'on s\'assoie.','Insert name (e.g: John. D)':'Tom. B','Insert location':'Terrasse','Main category':'Philosophie','Second category':'Nature','Under alcohol ?':'Non','Context':'Coucher de soleil','Si wam, avec qui ?':'' },
-    { 'Horodateur':'14/06/2024 20:05:00','Insert quote':'Je ne suis pas en retard, le temps est en avance.','Insert name (e.g: John. D)':'Léa. C','Insert location':'Café Voltaire','Main category':'Humour','Second category':'Temps','Under alcohol ?':'Non','Context':'Rendez-vous raté','Si wam, avec qui ?':'Alex. M' },
-    { 'Horodateur':'29/06/2024 22:40:00','Insert quote':'On a tous un plan jusqu\'à ce qu\'on reçoive la facture.','Insert name (e.g: John. D)':'Alex. M','Insert location':'Restaurant Le Gaulois','Main category':'Sagesse','Second category':'Argent','Under alcohol ?':'Oui','Context':'Addition de fin de soirée','Si wam, avec qui ?':'Toute la bande' },
-    { 'Horodateur':'11/07/2024 19:30:00','Insert quote':'Le bonheur, c\'est quand le WiFi se connecte du premier coup.','Insert name (e.g: John. D)':'Tom. B','Insert location':'Appartement de Julie','Main category':'Tech','Second category':'Humour','Under alcohol ?':'Non','Context':'Soirée Netflix','Si wam, avec qui ?':'Julie. R' },
-    { 'Horodateur':'03/08/2024 01:15:00','Insert quote':'J\'ai deux humeurs : fatigué et très fatigué. Ce soir c\'est la deuxième.','Insert name (e.g: John. D)':'Julie. R','Insert location':'Plage de Pampelonne','Main category':'Humour','Second category':'Fatigue','Under alcohol ?':'Oui','Context':'Retour de plage','Si wam, avec qui ?':'Alex, Tom, Léa' },
-    { 'Horodateur':'25/09/2024 18:00:00','Insert quote':'Les meilleures idées arrivent sous la douche, mais le carnet de notes y est pas étanche.','Insert name (e.g: John. D)':'Léa. C','Insert location':'Chez Léa','Main category':'Créativité','Second category':'Humour','Under alcohol ?':'Non','Context':'Discussion créa','Si wam, avec qui ?':'' },
-    { 'Horodateur':'10/10/2024 22:20:00','Insert quote':'Optimiste : quelqu\'un qui n\'a pas encore lu les nouvelles.','Insert name (e.g: John. D)':'Alex. M','Insert location':'Bar du Coin','Main category':'Philosophie','Second category':'Politique','Under alcohol ?':'Oui','Context':'Débat houleux','Si wam, avec qui ?':'Tom. B' },
-    { 'Horodateur':'31/12/2024 23:59:00','Insert quote':'Bonne année ! Ou du moins, une année différente.','Insert name (e.g: John. D)':'Tom. B','Insert location':'Toit-terrasse de Alex','Main category':'Humour','Second category':'Temps','Under alcohol ?':'Oui','Context':'Réveillon','Si wam, avec qui ?':'Tout le monde' },
-    { 'Horodateur':'14/01/2025 20:45:00','Insert quote':'La motivation c\'est comme le café : ça dure deux heures et ensuite il faut en reprendre.','Insert name (e.g: John. D)':'Julie. R','Insert location':'Co-working Space','Main category':'Sagesse','Second category':'Travail','Under alcohol ?':'Non','Context':'Session boulot','Si wam, avec qui ?':'' },
-    { 'Horodateur':'28/02/2025 21:00:00','Insert quote':'Si la vie était un film, je demanderais à revoir le scénario.','Insert name (e.g: John. D)':'Léa. C','Insert location':'Cinéma Lumière','Main category':'Philosophie','Second category':'Humour','Under alcohol ?':'Non','Context':'Après la séance','Si wam, avec qui ?':'Alex. M, Tom. B' },
-  ];
-  initData(demo);
+// Charge data.json automatiquement au démarrage (chemin relatif GitHub Pages)
+async function fetchData() {
+  try {
+    const res = await fetch('./data.json');
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    initData(Array.isArray(data) ? data : data.data || []);
+  } catch (err) {
+    // Chargement silencieux : le spinner reste affiché sans message d'erreur
+    console.warn('data.json introuvable ou invalide :', err);
+  }
 }
 
 function initData(data) {
@@ -1102,25 +960,14 @@ function initData(data) {
   filteredQuotes = [...allQuotes];
   dataLoaded = true;
 
-  // Hide load screen, show main app
   document.getElementById('no-data-screen').classList.remove('active');
   document.getElementById('bottom-nav').style.display = '';
   navigate('quote');
   buildFilters();
   showRandom();
-  showToast(`✓ ${allQuotes.length} phrases chargées`);
+  showToast(`> ${allQuotes.length} phrases chargées`);
 }
 
-function showLoadScreen() {
-  if (!dataLoaded) return;
-  // re-show load screen
-  allQuotes = [];
-  filteredQuotes = [];
-  dataLoaded = false;
-  document.getElementById('no-data-screen').classList.add('active');
-  hideAllScreens();
-  document.getElementById('bottom-nav').style.display = 'none';
-}
 
 // ═══════════════════════════════════════════════
 //  NAVIGATION
@@ -1508,15 +1355,19 @@ function showToast(msg) {
 //  INIT
 // ═══════════════════════════════════════════════
 window.addEventListener('DOMContentLoaded', () => {
+  // Nav masquée pendant le chargement
   document.getElementById('bottom-nav').style.display = 'none';
   document.getElementById('no-data-screen').classList.add('active');
+
+  // Charge data.json depuis GitHub Pages
+  fetchData();
 
   // PWA service worker
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js').catch(() => {});
   }
 
-  // Keyboard shortcuts
+  // Raccourci clavier : espace / entrée → phrase suivante
   document.addEventListener('keydown', e => {
     if (e.key === ' ' || e.key === 'Enter') showRandom();
   });
