@@ -12,7 +12,6 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/wordcloud@1.2.2/src/wordcloud2.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 
   <style>
@@ -382,6 +381,12 @@
     .alcohol-badge.yes { background: #fbbf2422; color: var(--amber); border: 1px solid #fbbf2444; }
     .alcohol-badge.no  { background: #4ade8022; color: var(--green);  border: 1px solid #4ade8044; }
 
+    .vol-badge {
+      background: #22d3ee18;
+      color: #22d3ee;
+      border: 1px solid #22d3ee33;
+    }
+
     /* ── BOTTOM ACTION BAR ── */
     .bottom-bar {
       padding: 12px 16px calc(var(--safe-bottom) + 12px);
@@ -529,11 +534,6 @@
 
     canvas.chart-canvas { max-height: 220px; }
 
-    #wordcloud-canvas {
-      width: 100%;
-      height: 200px;
-      border-radius: var(--radius-sm);
-    }
 
     /* ── HISTORY SCREEN ── */
     #screen-history { padding: 18px; gap: 10px; }
@@ -542,24 +542,16 @@
       background: var(--panel);
       border: 1px solid var(--border);
       border-radius: var(--radius-sm);
-      padding: 14px;
+      padding: 12px 12px 12px 14px;
       cursor: pointer;
       transition: border-color 0.15s;
       position: relative;
-      overflow: hidden;
-    }
-    .history-item::before {
-      content: '>';
-      position: absolute;
-      left: 14px; top: 14px;
-      color: var(--accent);
-      font-family: var(--font-mono);
-      font-size: 11px;
-      opacity: 0;
-      transition: opacity 0.15s;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
     }
     .history-item:active { border-color: var(--accent); }
-    .history-item:active::before { opacity: 1; }
+    .history-item-body { flex: 1; min-width: 0; }
     .history-quote {
       font-family: var(--font-mono);
       font-size: 13px;
@@ -571,10 +563,41 @@
     .history-author {
       font-size: 11px;
       color: var(--text-dim);
-      margin-top: 8px;
+      margin-top: 6px;
       font-family: var(--font-mono);
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 4px;
     }
-    .history-author::before { content: '— '; color: var(--accent); }
+    .history-author-arrow { color: #ffffff; margin-right: 2px; }
+    .history-cat-badge {
+      display: inline-block;
+      padding: 1px 6px;
+      border-radius: 3px;
+      font-size: 10px;
+      background: #6d1a2a18;
+      color: #c0506a;
+      border: 1px solid #c0506a33;
+      font-style: normal;
+      white-space: nowrap;
+    }
+    .history-fav-btn {
+      flex-shrink: 0;
+      width: 36px; height: 36px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: var(--card);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.15s;
+      -webkit-tap-highlight-color: transparent;
+      font-size: 18px;
+      line-height: 1;
+      align-self: center;
+    }
+    .history-fav-btn:active { transform: scale(0.9); }
+    .history-fav-btn.active { border-color: #f472b644; background: #f472b611; }
 
     /* ── BOTTOM NAV ── */
     .bottom-nav {
@@ -999,8 +1022,8 @@
       <canvas class="chart-canvas" id="chart-locations"></canvas>
     </div>
     <div class="stats-card">
-      <div class="stats-card-title">word_cloud()</div>
-      <canvas id="wordcloud-canvas"></canvas>
+      <div class="stats-card-title">phrases par volume</div>
+      <canvas class="chart-canvas" id="chart-volumes"></canvas>
     </div>
   </div>
 
@@ -1019,10 +1042,10 @@
       <span class="nav-icon">🎲</span>phrases
     </button>
     <button class="nav-btn" onclick="navigate('stats')" id="nav-stats">
-      <span class="nav-icon">◑</span>stats
+      <span class="nav-icon">📊</span>stats
     </button>
     <button class="nav-btn" onclick="navigate('history')" id="nav-history">
-      <span class="nav-icon">○</span>log
+      <span class="nav-icon">💾</span>log
     </button>
   </nav>
 
@@ -1072,6 +1095,12 @@
         </button>
         <div class="filter-chips filter-collapsible" id="filter-alcohol"></div>
       </div>
+      <div class="filter-cat-section">
+        <button class="filter-cat-toggle" onclick="toggleFilterCat('volumes')">
+          <span>📚 Volume</span><span class="filter-cat-arrow">▸</span>
+        </button>
+        <div class="filter-chips filter-collapsible" id="filter-volumes"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -1097,7 +1126,7 @@ let filteredQuotes = [];
 let currentQuote = null;
 let sessionHistory = [];
 let favorites = JSON.parse(localStorage.getItem('qapp_favs') || '[]');
-let activeFilters = { authors:[], mainCats:[], secondCats:[], locations:[], alcohol:[], search:'' };
+let activeFilters = { authors:[], mainCats:[], secondCats:[], locations:[], alcohol:[], volumes:[], search:'' };
 let charts = {};
 let dataLoaded = false;
 
@@ -1112,6 +1141,7 @@ const COL = {
   alcohol:   ['Under alcohol ?','Under alcohol','alcool','Alcool'],
   context:   ['Context','context','Contexte'],
   wam:       ['Si wam, avec qui ?','Si wam','wam'],
+  volume:    ['Volume','volume','Vol','vol'],
 };
 
 function getCol(row, keys) {
@@ -1268,8 +1298,9 @@ function buildChips(q) {
   const mainCat   = getCol(q, COL.mainCat);
   const secondCat = getCol(q, COL.secondCat);
   const alcohol   = getCol(q, COL.alcohol);
+  const volume    = getCol(q, COL.volume);
 
-  if (!ctx && !mainCat && !secondCat && !alcohol) return;
+  if (!ctx && !mainCat && !secondCat && !alcohol && !volume) return;
 
   // ── Badge catégorie (toujours visible) ───────────────────────────────
   if (mainCat) {
@@ -1286,6 +1317,14 @@ function buildChips(q) {
     const badge = document.createElement('span');
     badge.className = `info-badge alc-badge ${isYes ? 'yes' : 'no'}`;
     badge.textContent = isYes ? '🍺 avec alcool' : '🍃 sans alcool';
+    row.appendChild(badge);
+  }
+
+  // ── Badge volume (toujours visible si présent) ──────────────────────────
+  if (volume) {
+    const badge = document.createElement('span');
+    badge.className = 'info-badge vol-badge';
+    badge.textContent = '📚 Vol. ' + volume;
     row.appendChild(badge);
   }
 
@@ -1380,9 +1419,44 @@ function renderHistory() {
   sessionHistory.forEach(q => {
     const item = document.createElement('div');
     item.className = 'history-item';
-    item.innerHTML = `<div class="history-quote">${getCol(q, COL.quote)}</div>
-      <div class="history-author">— ${getCol(q, COL.name) || '?'} · ${getCol(q, COL.location) || ''}</div>`;
-    item.onclick = () => { displayQuote(q); navigate('quote'); };
+
+    const quoteKey = getCol(q, COL.quote);
+    const isFav = favorites.some(f => getCol(f, COL.quote) === quoteKey);
+    const name  = getCol(q, COL.name) || '?';
+    const loc   = getCol(q, COL.location) || '';
+    const cat   = getCol(q, COL.mainCat) || '';
+
+    const catHtml = cat ? ` <span class="history-cat-badge">${cat}</span>` : '';
+
+    item.innerHTML =
+      '<button class="history-fav-btn' + (isFav ? ' active' : '') + '" title="Favori"><span class="fav-icon">' + (isFav ? '♥️' : '🧷') + '</span></button>' +
+      '<div class="history-item-body">' +
+        '<div class="history-quote">' + quoteKey + '</div>' +
+        '<div class="history-author"><span class="history-author-arrow">></span>' + name + ' · ' + loc + catHtml + '</div>' +
+      '</div>';
+
+    // Clic sur le bouton favori
+    const favBtn = item.querySelector('.history-fav-btn');
+    favBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const idx = favorites.findIndex(f => getCol(f, COL.quote) === quoteKey);
+      if (idx === -1) {
+        favorites.push(q);
+        favBtn.innerHTML = '<span class="fav-icon">♥️</span>';
+        favBtn.classList.add('active');
+        showToast('♥️ Ajouté aux favoris');
+      } else {
+        favorites.splice(idx, 1);
+        favBtn.innerHTML = '<span class="fav-icon">🧷</span>';
+        favBtn.classList.remove('active');
+        showToast('Retiré des favoris');
+      }
+      localStorage.setItem('qapp_favs', JSON.stringify(favorites));
+      updateFavBtn();
+    });
+
+    // Clic sur l'item = afficher la phrase
+    item.addEventListener('click', () => { displayQuote(q); navigate('quote'); });
     list.appendChild(item);
   });
 }
@@ -1398,6 +1472,7 @@ function buildFilters() {
   buildChipFilter('filter-second-cats', uniq(COL.secondCat), 'secondCats');
   buildChipFilter('filter-locations', uniq(COL.location), 'locations');
   buildChipFilter('filter-alcohol', uniq(COL.alcohol), 'alcohol');
+  buildChipFilter('filter-volumes', uniq(COL.volume), 'volumes');
 }
 
 function buildChipFilter(containerId, values, filterKey) {
@@ -1426,6 +1501,7 @@ function applyFilters() {
     if (activeFilters.secondCats.length && !activeFilters.secondCats.includes(getCol(q, COL.secondCat))) return false;
     if (activeFilters.locations.length && !activeFilters.locations.includes(getCol(q, COL.location))) return false;
     if (activeFilters.alcohol.length && !activeFilters.alcohol.includes(getCol(q, COL.alcohol))) return false;
+    if (activeFilters.volumes.length && !activeFilters.volumes.includes(getCol(q, COL.volume))) return false;
     if (activeFilters.search) {
       const haystack = (getCol(q, COL.quote) + ' ' + getCol(q, COL.context)).toLowerCase();
       if (!haystack.includes(activeFilters.search)) return false;
@@ -1439,7 +1515,7 @@ function applyFilters() {
 }
 
 function resetFilters() {
-  activeFilters = { authors:[], mainCats:[], secondCats:[], locations:[], alcohol:[], search:'' };
+  activeFilters = { authors:[], mainCats:[], secondCats:[], locations:[], alcohol:[], volumes:[], search:'' };
   // Vider la recherche
   const si = document.getElementById('search-input');
   if (si) si.value = '';
@@ -1469,21 +1545,23 @@ function buildStats() {
 
   // Overview
   const alcoholCount = allQuotes.filter(q => /oui|yes|true/i.test(getCol(q, COL.alcohol))).length;
-  const avgLen = Math.round(allQuotes.reduce((s,q) => s + getCol(q,COL.quote).length, 0) / allQuotes.length);
   const uniqAuthors = new Set(allQuotes.map(q=>getCol(q,COL.name))).size;
-  const uniqLocs = new Set(allQuotes.map(q=>getCol(q,COL.location))).size;
+  // Catégorie la plus représentée
+  const catFreq = {};
+  allQuotes.forEach(q => { const c = getCol(q,COL.mainCat)||'Autre'; catFreq[c]=(catFreq[c]||0)+1; });
+  const topCat = Object.entries(catFreq).sort((a,b)=>b[1]-a[1])[0];
+  const topCatName = topCat ? topCat[0] : '—';
 
-  document.getElementById('stat-overview').innerHTML = `
-    <div class="stat-mini"><div class="num">${allQuotes.length}</div><div class="lbl">Phrases</div></div>
-    <div class="stat-mini"><div class="num">${uniqAuthors}</div><div class="lbl">Auteurs</div></div>
-    <div class="stat-mini"><div class="num">${alcoholCount}</div><div class="lbl">Avec alcool</div></div>
-    <div class="stat-mini"><div class="num">${avgLen}</div><div class="lbl">Longueur moy.</div></div>
-  `;
+  document.getElementById('stat-overview').innerHTML =
+    '<div class="stat-mini"><div class="num">' + allQuotes.length + '</div><div class="lbl">Phrases</div></div>' +
+    '<div class="stat-mini"><div class="num">' + uniqAuthors + '</div><div class="lbl">Auteurs</div></div>' +
+    '<div class="stat-mini"><div class="num">' + alcoholCount + '</div><div class="lbl">Avec alcool</div></div>' +
+    '<div class="stat-mini"><div class="num" style="font-size:14px;line-height:1.2">' + topCatName + '</div><div class="lbl">Catégorie #1</div></div>';
 
-  // Persons chart
+  // Persons chart — top 10
   const personCounts = {};
   allQuotes.forEach(q => { const n = getCol(q,COL.name)||'?'; personCounts[n] = (personCounts[n]||0)+1; });
-  const personSorted = Object.entries(personCounts).sort((a,b)=>b[1]-a[1]);
+  const personSorted = Object.entries(personCounts).sort((a,b)=>b[1]-a[1]).slice(0,10);
   destroyChart('persons');
   charts.persons = new Chart(document.getElementById('chart-persons'), {
     type: 'bar',
@@ -1491,15 +1569,53 @@ function buildStats() {
     options: chartOpts('Phrases')
   });
 
-  // Main cats
+  // Main cats — sans contour + pourcentages dans le donut
   const catCounts = {};
   allQuotes.forEach(q => { const c = getCol(q,COL.mainCat)||'Autre'; catCounts[c]=(catCounts[c]||0)+1; });
   const catSorted = Object.entries(catCounts).sort((a,b)=>b[1]-a[1]);
+  const catTotal = catSorted.reduce((s,e)=>s+e[1],0);
   destroyChart('cats');
+  // Plugin inline pour afficher les % dans le donut
+  const doughnutPctPlugin = {
+    id: 'doughnutPct',
+    afterDatasetsDraw(chart) {
+      const { ctx, data } = chart;
+      const total = data.datasets[0].data.reduce((s,v)=>s+v,0);
+      ctx.save();
+      data.datasets[0].data.forEach((val, i) => {
+        const meta = chart.getDatasetMeta(0);
+        const arc  = meta.data[i];
+        if (!arc) return;
+        const pct = Math.round(val / total * 100);
+        if (pct < 4) return; // skip tiny slices
+        const angle = (arc.startAngle + arc.endAngle) / 2;
+        const r = (arc.innerRadius + arc.outerRadius) / 2;
+        const x = arc.x + Math.cos(angle) * r;
+        const y = arc.y + Math.sin(angle) * r;
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 10px JetBrains Mono, monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(pct + '%', x, y);
+      });
+      ctx.restore();
+    }
+  };
   charts.cats = new Chart(document.getElementById('chart-cats'), {
     type: 'doughnut',
-    data: { labels: catSorted.map(e=>e[0]), datasets:[{ data: catSorted.map(e=>e[1]), backgroundColor: CHART_COLORS, borderWidth:2, borderColor:'#fff' }]},
-    options: { ...chartOpts(), plugins:{ legend:{ position:'right', labels:{ font:{family:'JetBrains Mono',size:10}, color:'#4a4a6a', boxWidth:12 }}, tooltip:{ callbacks:{ label: ctx => ` ${ctx.label}: ${ctx.raw}` }}}}
+    data: { labels: catSorted.map(e=>e[0]), datasets:[{ data: catSorted.map(e=>e[1]), backgroundColor: CHART_COLORS, borderWidth:0, borderColor:'transparent', hoverOffset:6 }]},
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: { position:'right', labels:{ font:{family:'JetBrains Mono',size:10}, color:'#8b8fac', boxWidth:10, padding:10 }},
+        tooltip: { callbacks: { label: function(ctx) {
+          const pct = Math.round(ctx.raw / catTotal * 100);
+          return ' ' + ctx.label + ': ' + ctx.raw + ' (' + pct + '%)';
+        }}}
+      }
+    },
+    plugins: [doughnutPctPlugin]
   });
 
   // Hours
@@ -1523,25 +1639,22 @@ function buildStats() {
     options: { ...chartOpts('Phrases'), indexAxis:'y' }
   });
 
-  // Wordcloud
-  const wordFreq = {};
-  const stopwords = new Set(['le','la','les','de','du','des','un','et','en','à','au','aux','je','il','elle','on','nous','vous','ils','elles','que','qui','ce','se','sa','si','pas','ne','mais','ou','donc','or','ni','car','plus','tout','dans','sur','par','avec','pour','est','son','une','mon','ma','mes','ses','leur','leurs','cette','ces','cet','vous','nous','après','avant','très']);
-  allQuotes.forEach(q => {
-    getCol(q,COL.quote).toLowerCase().replace(/[^a-zàâäéèêëîïôùûüç\s]/g,' ').split(/\s+/).forEach(w => {
-      if (w.length > 3 && !stopwords.has(w)) wordFreq[w] = (wordFreq[w]||0)+1;
+  // Volumes
+  const volCounts = {};
+  allQuotes.forEach(q => { const v = getCol(q,COL.volume); if(v) volCounts[v]=(volCounts[v]||0)+1; });
+  if (Object.keys(volCounts).length) {
+    const volSorted = Object.entries(volCounts).sort((a,b)=>{
+      const na = parseInt(a[0])||0, nb = parseInt(b[0])||0;
+      return na - nb || a[0].localeCompare(b[0]);
     });
-  });
-  const words = Object.entries(wordFreq).sort((a,b)=>b[1]-a[1]).slice(0,60);
-  try {
-    WordCloud(document.getElementById('wordcloud-canvas'), {
-      list: words,
-      gridSize: 6,
-      weightFactor: s => Math.max(10, s * 8),
-      fontFamily: 'JetBrains Mono',
-      color: () => CHART_COLORS[Math.floor(Math.random()*CHART_COLORS.length)],
-      backgroundColor: 'transparent',
+    destroyChart('volumes');
+    charts.volumes = new Chart(document.getElementById('chart-volumes'), {
+      type: 'bar',
+      data: { labels: volSorted.map(e=>'Vol. '+e[0]), datasets:[{ data:volSorted.map(e=>e[1]), backgroundColor: CHART_COLORS, borderRadius:8, borderSkipped:false }]},
+      options: chartOpts('Phrases')
     });
-  } catch(e) {}
+  }
+
 }
 
 function chartOpts(yLabel) {
@@ -1583,7 +1696,7 @@ function updateFilterCount() {
   if (!el) return;
   const n = activeFilters.authors.length + activeFilters.mainCats.length +
     activeFilters.secondCats.length + activeFilters.locations.length +
-    activeFilters.alcohol.length + (activeFilters.search ? 1 : 0);
+    activeFilters.alcohol.length + activeFilters.volumes.length + (activeFilters.search ? 1 : 0);
   el.textContent = n === 0 ? 'Aucun filtre actif' : `${n} filtre${n > 1 ? 's' : ''} actif${n > 1 ? 's' : ''}`;
 }
 
@@ -1601,7 +1714,7 @@ function updateFilterCatState(id, toggle) {
   if (!toggle) return;
   const keyMap = {
     'authors': 'authors', 'main-cats': 'mainCats',
-    'second-cats': 'secondCats', 'locations': 'locations', 'alcohol': 'alcohol'
+    'second-cats': 'secondCats', 'locations': 'locations', 'alcohol': 'alcohol', 'volumes': 'volumes'
   };
   const key = keyMap[id];
   const hasActive = key && activeFilters[key] && activeFilters[key].length > 0;
@@ -1609,7 +1722,7 @@ function updateFilterCatState(id, toggle) {
 }
 
 function refreshFilterCatStates() {
-  ['authors','main-cats','second-cats','locations','alcohol'].forEach(id => {
+  ['authors','main-cats','second-cats','locations','alcohol','volumes'].forEach(id => {
     const chips  = document.getElementById('filter-' + id);
     const toggle = chips ? chips.previousElementSibling : null;
     updateFilterCatState(id, toggle);
@@ -1657,7 +1770,7 @@ function syncFilterChips() {
 function updateFilterBtnState() {
   const hasFilter = activeFilters.authors.length || activeFilters.mainCats.length ||
     activeFilters.secondCats.length || activeFilters.locations.length ||
-    activeFilters.alcohol.length || activeFilters.search;
+    activeFilters.alcohol.length || activeFilters.volumes.length || activeFilters.search;
   const btn = document.getElementById('btn-filter-toggle');
   if (btn) btn.classList.toggle('active', !!hasFilter);
   const rst = document.querySelector('.filter-reset');
