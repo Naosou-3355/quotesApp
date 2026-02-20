@@ -115,7 +115,36 @@
       font-weight: 300;
     }
 
-    .header-actions { display: flex; gap: 6px; }
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-fav-header {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 11px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--card);
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: border-color 0.15s;
+    }
+    .btn-fav-header:active { border-color: var(--accent); }
+    .btn-fav-header-icon {
+      font-size: 15px;
+      line-height: 1;
+    }
+    .btn-fav-header-label {
+      font-size: 10px;
+      font-family: var(--font-mono);
+      color: var(--text-dim);
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
 
     .icon-btn {
       width: 34px; height: 34px;
@@ -233,7 +262,7 @@
       font-family: var(--font-mono);
       letter-spacing: 0.5px;
     }
-    .meta-author::before { content: '> '; color: var(--green); }
+    .meta-author::before { content: '> '; color: #ffffff; }
 
     .meta-secondary {
       font-size: 11px;
@@ -252,7 +281,8 @@
       display: flex;
       gap: 6px;
       flex-wrap: wrap;
-      padding: 10px 22px;
+      padding: 14px 0 0;
+      justify-content: flex-start;
     }
 
     .chip {
@@ -281,12 +311,40 @@
     }
     .chip.active::before, .chip.active::after { color: var(--accent); }
 
+    /* ── BADGES TOUJOURS VISIBLES (catégorie + alcool) ── */
+    .info-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 10px;
+      border-radius: var(--radius-sm);
+      font-size: 11px;
+      font-family: var(--font-mono);
+      font-weight: 500;
+      letter-spacing: 0.3px;
+      border: 1px solid var(--border);
+    }
+    .cat-badge {
+      background: #6d1a2a18;
+      color: #c0506a;
+      border-color: #6d1a2a55;
+    }
+    .alc-badge.yes {
+      background: #fbbf2414;
+      color: var(--amber);
+      border-color: #fbbf2440;
+    }
+    .alc-badge.no {
+      background: #4ade8012;
+      color: var(--green);
+      border-color: #4ade8035;
+    }
+
     /* ── DETAILS PANEL ── */
     .details-panel {
       display: none;
       flex-direction: column;
       gap: 8px;
-      padding: 0 22px 14px;
+      padding: 10px 0 0;
       animation: fadeIn 0.2s ease;
     }
     .details-panel.open { display: flex; }
@@ -305,7 +363,7 @@
       line-height: 1.5;
     }
     .detail-label {
-      color: var(--green);
+      color: #ffffff;
       flex-shrink: 0;
       font-size: 11px;
     }
@@ -357,7 +415,7 @@
       box-shadow: var(--accent-glow);
       -webkit-tap-highlight-color: transparent;
     }
-    .btn-random::before { content: '$ '; opacity: 0.5; }
+    .btn-random::before { content: ''; }
     .btn-random:active {
       transform: scale(0.98);
       background: var(--accent);
@@ -369,13 +427,15 @@
       border-radius: var(--radius);
       border: 1px solid var(--border);
       background: var(--card);
-      font-size: 18px;
       cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       transition: all 0.15s;
       -webkit-tap-highlight-color: transparent;
       flex-shrink: 0;
     }
+    .btn-fav .fav-icon { font-size: 22px; line-height: 1; }
     .btn-fav:active { transform: scale(0.9); }
     .btn-fav.active { border-color: #f472b644; background: #f472b611; }
 
@@ -415,20 +475,7 @@
       box-shadow: 0 0 0 2px var(--accent-dim);
     }
 
-    .filter-reset {
-      padding: 12px;
-      border-radius: var(--radius-sm);
-      border: 1px solid var(--border);
-      background: transparent;
-      color: var(--text-dim);
-      font-family: var(--font-mono);
-      font-size: 11px;
-      letter-spacing: 1px;
-      cursor: pointer;
-      text-align: center;
-      transition: border-color 0.15s, color 0.15s;
-    }
-    .filter-reset:hover { border-color: var(--pink); color: var(--pink); }
+
 
     /* ── STATS SCREEN ── */
     #screen-stats { padding: 18px; gap: 16px; }
@@ -690,9 +737,9 @@
     /* ── TOAST ── */
     .toast {
       position: fixed;
-      bottom: calc(var(--safe-bottom) + 90px);
+      top: calc(var(--safe-top) + 72px); /* sous le header, au niveau du coin haut-gauche */
       left: 50%;
-      transform: translateX(-50%) translateY(16px);
+      transform: translateX(-50%) translateY(-8px);
       background: var(--card);
       border: 1px solid var(--border);
       color: var(--accent);
@@ -709,7 +756,7 @@
       z-index: 200;
       box-shadow: 0 4px 24px rgba(0,0,0,0.4);
     }
-    .toast::before { content: '> '; color: var(--green); }
+    .toast::before { content: '> '; color: #ffffff; }
     .toast.show {
       opacity: 1;
       transform: translateX(-50%) translateY(0);
@@ -733,6 +780,148 @@
       80%      { transform: translate(1px, -2px); }
     }
     .quote-text.loading { animation: glitch 0.3s ease; opacity: 0.1; }
+
+    /* ── BOUTON FILTRE BOTTOM BAR ── */
+    .btn-filter-toggle {
+      width: 48px; height: 48px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--text-mid);
+      font-size: 18px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.15s;
+      -webkit-tap-highlight-color: transparent;
+      flex-shrink: 0;
+    }
+    .btn-filter-toggle.active {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-dim);
+    }
+    .btn-filter-toggle:active { transform: scale(0.9); }
+
+    /* ── FILTER OVERLAY ── */
+    .filter-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 100;
+      backdrop-filter: blur(6px);
+      align-items: flex-end;
+    }
+    .filter-overlay.open { display: flex; }
+
+    .filter-menu {
+      width: 100%;
+      max-width: 480px;
+      margin: 0 auto;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-bottom: none;
+      border-radius: 18px 18px 0 0;
+      animation: sheetUp 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+      display: flex;
+      flex-direction: column;
+      max-height: 80vh;
+    }
+
+    .filter-menu-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 18px 10px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 4px;
+    }
+
+    .filter-count-txt {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent);
+      font-family: var(--font-mono);
+      letter-spacing: 0.5px;
+    }
+
+    .filter-reset {
+      padding: 7px 12px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s;
+      white-space: nowrap;
+    }
+    .filter-reset:hover { border-color: var(--border); color: var(--text-dim); }
+    .filter-reset:active { border-color: var(--border); color: var(--text-dim); }
+    .filter-reset.has-filters {
+      border-color: #e05575;
+      color: #e05575;
+    }
+    .filter-reset.has-filters:hover {
+      background: #e0557520;
+      border-color: #e05575;
+      color: #e05575;
+    }
+
+    .filter-menu-body {
+      overflow-y: auto;
+      padding: 6px 18px calc(var(--safe-bottom) + 22px);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* ── CATÉGORIES PLIABLES ── */
+    .filter-cat-section {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+    }
+
+    .filter-cat-toggle {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      background: var(--card);
+      border: none;
+      color: var(--text-mid);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: color 0.15s;
+      letter-spacing: 0.3px;
+    }
+    .filter-cat-toggle:active { color: var(--accent); }
+    .filter-cat-toggle.has-active { color: var(--accent); background: var(--accent-dim); }
+
+    .filter-cat-arrow {
+      font-size: 10px;
+      transition: transform 0.2s;
+      color: var(--text-dim);
+    }
+    .filter-cat-toggle.open .filter-cat-arrow { transform: rotate(90deg); }
+
+    .filter-collapsible {
+      display: none;
+      padding: 10px 12px 12px;
+      background: var(--panel);
+      gap: 6px;
+    }
+    .filter-collapsible.open { display: flex; }
+
+
   </style>
 </head>
 <body>
@@ -743,7 +932,10 @@
   <header class="header">
     <span class="app-name" id="app-title">quotes</span>
     <div class="header-actions">
-      <button class="icon-btn" onclick="openHistorySheet()" title="Favoris">♡</button>
+      <button class="btn-fav-header" id="btn-fav-header" onclick="openHistorySheet()" title="Mes favoris">
+        <span class="btn-fav-header-label">Mes phrases préfs</span>
+        <span class="btn-fav-header-icon">♡</span>
+      </button>
     </div>
   </header>
 
@@ -758,59 +950,31 @@
   <!-- SCREEN : QUOTE -->
   <div class="screen" id="screen-quote">
     <div class="quote-area">
-      <div class="quote-line-num" id="quote-line-num">line 001 / 000</div>
+      <div class="quote-line-num" id="quote-line-num">phrase 001 / 000</div>
       <span class="quote-mark">"</span>
       <p class="quote-text" id="quote-text">Appuyez sur le bouton pour découvrir une phrase.<span class="cursor-blink"></span></p>
       <div class="quote-meta">
         <div class="meta-author" id="meta-author">—</div>
         <div class="meta-secondary" id="meta-secondary"></div>
       </div>
+
+      <!-- Badges catégorie / alcool + bouton contexte -->
+      <div class="chips-row" id="chips-row"></div>
+
+      <!-- Détails panel -->
+      <div class="details-panel" id="details-panel"></div>
     </div>
-
-    <!-- Chips masquables -->
-    <div class="chips-row" id="chips-row"></div>
-
-    <!-- Détails panel -->
-    <div class="details-panel" id="details-panel"></div>
 
     <!-- Bottom bar -->
     <div class="bottom-bar">
-      <button class="btn-fav" id="btn-fav" onclick="toggleFav()" title="Favoris">♡</button>
-      <button class="btn-random" onclick="showRandom()">
-        random_quote()
+      <button class="btn-fav" id="btn-fav" onclick="toggleFav()" title="Ajouter aux favoris">
+        <span class="fav-icon">🧷</span>
       </button>
+      <button class="btn-random" onclick="showRandom()">💬 Afficher une phrase au pif</button>
+      <button class="btn-filter-toggle" id="btn-filter-toggle" onclick="toggleFilterMenu()" title="Filtres">🔍</button>
     </div>
   </div>
 
-  <!-- SCREEN : FILTER -->
-  <div class="screen" id="screen-filter">
-    <div class="filter-section">
-      <div class="filter-title">Recherche</div>
-      <input class="filter-input" type="search" placeholder="grep 'mot clé' quotes.db" id="search-input" oninput="applyFilters()" />
-    </div>
-    <div class="filter-section">
-      <div class="filter-title">Auteur</div>
-      <div class="filter-chips" id="filter-authors"></div>
-    </div>
-    <div class="filter-section">
-      <div class="filter-title">Catégorie principale</div>
-      <div class="filter-chips" id="filter-main-cats"></div>
-    </div>
-    <div class="filter-section">
-      <div class="filter-title">Catégorie secondaire</div>
-      <div class="filter-chips" id="filter-second-cats"></div>
-    </div>
-    <div class="filter-section">
-      <div class="filter-title">Lieu</div>
-      <div class="filter-chips" id="filter-locations"></div>
-    </div>
-    <div class="filter-section">
-      <div class="filter-title">Alcool</div>
-      <div class="filter-chips" id="filter-alcohol"></div>
-    </div>
-    <button class="filter-reset" onclick="resetFilters()">reset_filters()</button>
-    <div style="font-size:11px;color:var(--text-dim);text-align:center;font-family:var(--font-mono);" id="filter-count"></div>
-  </div>
 
   <!-- SCREEN : STATS -->
   <div class="screen" id="screen-stats">
@@ -852,10 +1016,7 @@
   <!-- BOTTOM NAV -->
   <nav class="bottom-nav" id="bottom-nav">
     <button class="nav-btn active" onclick="navigate('quote')" id="nav-quote">
-      <span class="nav-icon">◈</span>phrase
-    </button>
-    <button class="nav-btn" onclick="navigate('filter')" id="nav-filter">
-      <span class="nav-icon">⊟</span>filtres
+      <span class="nav-icon">🎲</span>phrases
     </button>
     <button class="nav-btn" onclick="navigate('stats')" id="nav-stats">
       <span class="nav-icon">◑</span>stats
@@ -865,6 +1026,54 @@
     </button>
   </nav>
 
+</div>
+
+
+<!-- FILTER MENU OVERLAY -->
+<div class="filter-overlay" id="filter-overlay" onclick="closeFilterMenu(event)">
+  <div class="filter-menu" id="filter-menu">
+    <div class="sheet-handle"></div>
+    <div class="filter-menu-header">
+      <div class="filter-count-txt" id="filter-count">— phrases</div>
+      <button class="filter-reset" onclick="resetFilters()">🧹 Supprimer les filtres</button>
+    </div>
+    <div class="filter-menu-body">
+      <div class="filter-section">
+        <div class="filter-title">Recherche</div>
+        <input class="filter-input" type="search" placeholder="grep 'mot clé'..." id="search-input" oninput="applyFilters()" />
+      </div>
+      <div class="filter-cat-section">
+        <button class="filter-cat-toggle" onclick="toggleFilterCat('authors')">
+          <span>👤 Auteur</span><span class="filter-cat-arrow">▸</span>
+        </button>
+        <div class="filter-chips filter-collapsible" id="filter-authors"></div>
+      </div>
+      <div class="filter-cat-section">
+        <button class="filter-cat-toggle" onclick="toggleFilterCat('main-cats')">
+          <span>🏷 Catégorie principale</span><span class="filter-cat-arrow">▸</span>
+        </button>
+        <div class="filter-chips filter-collapsible" id="filter-main-cats"></div>
+      </div>
+      <div class="filter-cat-section">
+        <button class="filter-cat-toggle" onclick="toggleFilterCat('second-cats')">
+          <span>🔖 Catégorie secondaire</span><span class="filter-cat-arrow">▸</span>
+        </button>
+        <div class="filter-chips filter-collapsible" id="filter-second-cats"></div>
+      </div>
+      <div class="filter-cat-section">
+        <button class="filter-cat-toggle" onclick="toggleFilterCat('locations')">
+          <span>📍 Lieu</span><span class="filter-cat-arrow">▸</span>
+        </button>
+        <div class="filter-chips filter-collapsible" id="filter-locations"></div>
+      </div>
+      <div class="filter-cat-section">
+        <button class="filter-cat-toggle" onclick="toggleFilterCat('alcohol')">
+          <span>🍺 Alcool</span><span class="filter-cat-arrow">▸</span>
+        </button>
+        <div class="filter-chips filter-collapsible" id="filter-alcohol"></div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- FAVORITES SHEET -->
@@ -964,6 +1173,7 @@ function initData(data) {
   document.getElementById('bottom-nav').style.display = '';
   navigate('quote');
   buildFilters();
+  buildQueue();
   showRandom();
   showToast(`> ${allQuotes.length} phrases chargées`);
 }
@@ -991,13 +1201,25 @@ function navigate(screen) {
 // ═══════════════════════════════════════════════
 //  QUOTE DISPLAY
 // ═══════════════════════════════════════════════
+// File de lecture mélangée : chaque phrase est jouée une fois avant de recommencer
+let shuffleQueue = [];
+
+function buildQueue() {
+  // Fisher-Yates shuffle sur une copie de filteredQuotes
+  shuffleQueue = [...filteredQuotes];
+  for (let i = shuffleQueue.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffleQueue[i], shuffleQueue[j]] = [shuffleQueue[j], shuffleQueue[i]];
+  }
+}
+
 function showRandom() {
   if (!filteredQuotes.length) {
     showToast('Aucune phrase avec ces filtres');
     return;
   }
-  const idx = Math.floor(Math.random() * filteredQuotes.length);
-  displayQuote(filteredQuotes[idx]);
+  if (!shuffleQueue.length) { buildQueue(); }
+  displayQuote(shuffleQueue.pop());
 }
 
 function displayQuote(q) {
@@ -1005,7 +1227,7 @@ function displayQuote(q) {
   // Update line number
   const qIdx = filteredQuotes.indexOf(q) + 1 || '?';
   const lineEl = document.getElementById('quote-line-num');
-  if (lineEl) lineEl.textContent = 'line ' + String(qIdx).padStart(3,'0') + ' / ' + String(filteredQuotes.length).padStart(3,'0');
+  if (lineEl) lineEl.textContent = 'phrase ' + String(qIdx).padStart(3,'0') + ' / ' + String(filteredQuotes.length).padStart(3,'0');
   const el = document.getElementById('quote-text');
   el.classList.add('loading');
   setTimeout(() => {
@@ -1036,78 +1258,57 @@ function displayQuote(q) {
 }
 
 function buildChips(q) {
-  const row = document.getElementById('chips-row');
+  const row   = document.getElementById('chips-row');
   const panel = document.getElementById('details-panel');
-  row.innerHTML = '';
+  row.innerHTML   = '';
   panel.innerHTML = '';
   panel.classList.remove('open');
 
-  const ctx      = getCol(q, COL.context);
-  const mainCat  = getCol(q, COL.mainCat);
-  const secondCat= getCol(q, COL.secondCat);
-  const alcohol  = getCol(q, COL.alcohol);
-  const wam      = getCol(q, COL.wam);
+  const ctx       = getCol(q, COL.context);
+  const mainCat   = getCol(q, COL.mainCat);
+  const secondCat = getCol(q, COL.secondCat);
+  const alcohol   = getCol(q, COL.alcohol);
 
-  const chips = [];
-  const details = [];
+  if (!ctx && !mainCat && !secondCat && !alcohol) return;
 
-  if (ctx) {
-    chips.push({ icon:'💬', label:'Contexte', id:'ctx' });
-    details.push({ icon:'💬', label:'Contexte', value: ctx, id:'ctx' });
+  // ── Badge catégorie (toujours visible) ───────────────────────────────
+  if (mainCat) {
+    const cat = mainCat + (secondCat ? ` · ${secondCat}` : '');
+    const badge = document.createElement('span');
+    badge.className = 'info-badge cat-badge';
+    badge.textContent = cat;
+    row.appendChild(badge);
   }
-  if (mainCat || secondCat) {
-    chips.push({ icon:'🏷', label:'Catégorie', id:'cat' });
-    if (mainCat)   details.push({ icon:'🏷', label:'Catégorie', value: mainCat + (secondCat ? ` · ${secondCat}` : ''), id:'cat' });
-  }
+
+  // ── Badge alcool (toujours visible) ──────────────────────────────────
   if (alcohol) {
     const isYes = /oui|yes|true/i.test(alcohol);
-    chips.push({ icon: isYes ? '🍺' : '💧', label: isYes ? 'Avec alcool' : 'Sans alcool', id:'alc' });
-    details.push({ icon: isYes ? '🍺' : '💧', label:'Alcool', value: `<span class="alcohol-badge ${isYes?'yes':'no'}">${alcohol}</span>`, id:'alc', html:true });
-  }
-  if (wam) {
-    chips.push({ icon:'👥', label:'Avec qui', id:'wam' });
-    details.push({ icon:'👥', label:'Avec qui', value: wam, id:'wam' });
+    const badge = document.createElement('span');
+    badge.className = `info-badge alc-badge ${isYes ? 'yes' : 'no'}`;
+    badge.textContent = isYes ? '🍺 avec alcool' : '🍃 sans alcool';
+    row.appendChild(badge);
   }
 
-  if (!details.length) return;
-
-  // Render single "Voir détails" chip
-  const masterChip = document.createElement('button');
-  masterChip.className = 'chip';
-  masterChip.innerHTML = `<span>ℹ︎</span> Voir les détails`;
-  masterChip.onclick = () => {
-    const open = panel.classList.toggle('open');
-    masterChip.classList.toggle('active', open);
-  };
-  row.appendChild(masterChip);
-
-  // Also individual chips
-  chips.forEach(c => {
-    const chip = document.createElement('button');
-    chip.className = 'chip';
-    chip.innerHTML = `<span>${c.icon}</span> ${c.label}`;
-    chip.onclick = () => {
-      const el = panel.querySelector(`[data-id="${c.id}"]`);
-      if (!panel.classList.contains('open')) panel.classList.add('open');
-      if (el) el.scrollIntoView({ behavior:'smooth', block:'nearest' });
-      chip.classList.add('active');
-      setTimeout(() => chip.classList.remove('active'), 600);
+  // ── Bouton "voir les détails" (uniquement si contexte disponible) ─────
+  if (ctx) {
+    const masterChip = document.createElement('button');
+    masterChip.className = 'chip';
+    masterChip.innerHTML = `<span>↓</span> voir le contexte`;
+    masterChip.onclick = () => {
+      const open = panel.classList.toggle('open');
+      masterChip.classList.toggle('active', open);
+      masterChip.innerHTML = open
+        ? `<span>↑</span> masquer`
+        : `<span>↓</span> voir le contexte`;
     };
-    row.appendChild(chip);
-  });
+    row.appendChild(masterChip);
 
-  // Render detail rows
-  details.forEach(d => {
-    const row_el = document.createElement('div');
-    row_el.className = 'detail-row';
-    row_el.dataset.id = d.id;
-    row_el.innerHTML = `
-      <span class="detail-icon">${d.icon}</span>
-      <div><span class="detail-label">${d.label} :</span>
-      ${d.html ? d.value : `<span class="detail-value">${d.value}</span>`}
-      </div>`;
-    panel.appendChild(row_el);
-  });
+    // ── Panel : contexte uniquement ────────────────────────────────────
+    const r = document.createElement('div');
+    r.className = 'detail-row';
+    r.innerHTML = `<span class="detail-label">Contexte</span><span class="detail-value">${ctx}</span>`;
+    panel.appendChild(r);
+  }
 }
 
 // ═══════════════════════════════════════════════
@@ -1119,7 +1320,7 @@ function toggleFav() {
   const idx = favorites.findIndex(f => getCol(f, COL.quote) === key);
   if (idx === -1) {
     favorites.push(currentQuote);
-    showToast('❤️ Ajouté aux favoris');
+    showToast('♥️ Ajouté aux favoris');
   } else {
     favorites.splice(idx, 1);
     showToast('Retiré des favoris');
@@ -1133,8 +1334,15 @@ function updateFavBtn() {
   const key = getCol(currentQuote, COL.quote);
   const isFav = favorites.some(f => getCol(f, COL.quote) === key);
   const btn = document.getElementById('btn-fav');
-  btn.textContent = isFav ? '♥' : '♡';
   btn.classList.toggle('active', isFav);
+  const icon = btn.querySelector('.fav-icon');
+  if (icon) icon.textContent = isFav ? '♥️' : '🧷';
+  // Bouton header : affiche ♥️ si au moins 1 favori
+  const btnHeader = document.getElementById('btn-fav-header');
+  if (btnHeader) {
+    const icon = btnHeader.querySelector('.btn-fav-header-icon');
+    if (icon) icon.textContent = favorites.length > 0 ? '♥️' : '♡';
+  }
 }
 
 function openHistorySheet() {
@@ -1224,15 +1432,27 @@ function applyFilters() {
     }
     return true;
   });
-  document.getElementById('filter-count').textContent = `${filteredQuotes.length} phrase${filteredQuotes.length > 1 ? 's' : ''} disponible${filteredQuotes.length > 1 ? 's' : ''}`;
+  buildQueue();
+  updateFilterCount();
+  updateFilterBtnState();
+  refreshFilterCatStates();
 }
 
 function resetFilters() {
   activeFilters = { authors:[], mainCats:[], secondCats:[], locations:[], alcohol:[], search:'' };
-  document.getElementById('search-input').value = '';
-  document.querySelectorAll('#screen-filter .chip').forEach(c => c.classList.remove('active'));
+  // Vider la recherche
+  const si = document.getElementById('search-input');
+  if (si) si.value = '';
+  // Désélectionner tous les chips du panneau filtre overlay
+  document.querySelectorAll('.filter-collapsible .chip').forEach(c => c.classList.remove('active'));
+  // Retirer l'état actif des boutons de catégorie
+  document.querySelectorAll('.filter-cat-toggle').forEach(t => t.classList.remove('has-active'));
+  // Remettre toutes les phrases
   filteredQuotes = [...allQuotes];
-  document.getElementById('filter-count').textContent = `${filteredQuotes.length} phrases disponibles`;
+  buildQueue();
+  updateFilterCount();
+  updateFilterBtnState();
+  localStorage.removeItem('qapp_filters');
 }
 
 // ═══════════════════════════════════════════════
@@ -1337,6 +1557,111 @@ function chartOpts(yLabel) {
       y: { grid: { color:'rgba(255,255,255,0.04)' }, ticks: { font:{family:'JetBrains Mono',size:10}, color:'#4a4f6a' } }
     }
   };
+}
+
+
+// ═══════════════════════════════════════════════
+//  FILTER MENU
+// ═══════════════════════════════════════════════
+function toggleFilterMenu() {
+  const overlay = document.getElementById('filter-overlay');
+  const btn     = document.getElementById('btn-filter-toggle');
+  const isOpen  = overlay.classList.toggle('open');
+  btn.classList.toggle('active', isOpen);
+  if (isOpen) updateFilterCount();
+}
+
+function closeFilterMenu(e) {
+  if (e.target === document.getElementById('filter-overlay')) {
+    document.getElementById('filter-overlay').classList.remove('open');
+    document.getElementById('btn-filter-toggle').classList.remove('active');
+  }
+}
+
+function updateFilterCount() {
+  const el = document.getElementById('filter-count');
+  if (!el) return;
+  const n = activeFilters.authors.length + activeFilters.mainCats.length +
+    activeFilters.secondCats.length + activeFilters.locations.length +
+    activeFilters.alcohol.length + (activeFilters.search ? 1 : 0);
+  el.textContent = n === 0 ? 'Aucun filtre actif' : `${n} filtre${n > 1 ? 's' : ''} actif${n > 1 ? 's' : ''}`;
+}
+
+function toggleFilterCat(id) {
+  const chips  = document.getElementById('filter-' + id);
+  const toggle = chips ? chips.previousElementSibling : null;
+  if (!chips || !toggle) return;
+  const isOpen = chips.classList.toggle('open');
+  toggle.classList.toggle('open', isOpen);
+  // Reflet actif
+  updateFilterCatState(id, toggle);
+}
+
+function updateFilterCatState(id, toggle) {
+  if (!toggle) return;
+  const keyMap = {
+    'authors': 'authors', 'main-cats': 'mainCats',
+    'second-cats': 'secondCats', 'locations': 'locations', 'alcohol': 'alcohol'
+  };
+  const key = keyMap[id];
+  const hasActive = key && activeFilters[key] && activeFilters[key].length > 0;
+  toggle.classList.toggle('has-active', hasActive);
+}
+
+function refreshFilterCatStates() {
+  ['authors','main-cats','second-cats','locations','alcohol'].forEach(id => {
+    const chips  = document.getElementById('filter-' + id);
+    const toggle = chips ? chips.previousElementSibling : null;
+    updateFilterCatState(id, toggle);
+  });
+}
+
+
+function loadSavedFilters() {
+  const saved = localStorage.getItem('qapp_filters');
+  if (!saved) return;
+  try {
+    activeFilters = JSON.parse(saved);
+    if (activeFilters.search) {
+      const si = document.getElementById('search-input');
+      if (si) si.value = activeFilters.search;
+    }
+    applyFilters();
+    // Re-highlight chips
+    setTimeout(() => {
+      syncFilterChips();
+      updateFilterBtnState();
+    }, 50);
+  } catch(e) {}
+}
+
+function syncFilterChips() {
+  // Auteurs
+  document.querySelectorAll('#filter-authors .chip').forEach(c => {
+    c.classList.toggle('active', activeFilters.authors.includes(c.textContent));
+  });
+  document.querySelectorAll('#filter-main-cats .chip').forEach(c => {
+    c.classList.toggle('active', activeFilters.mainCats.includes(c.textContent));
+  });
+  document.querySelectorAll('#filter-second-cats .chip').forEach(c => {
+    c.classList.toggle('active', activeFilters.secondCats.includes(c.textContent));
+  });
+  document.querySelectorAll('#filter-locations .chip').forEach(c => {
+    c.classList.toggle('active', activeFilters.locations.includes(c.textContent));
+  });
+  document.querySelectorAll('#filter-alcohol .chip').forEach(c => {
+    c.classList.toggle('active', activeFilters.alcohol.includes(c.textContent));
+  });
+}
+
+function updateFilterBtnState() {
+  const hasFilter = activeFilters.authors.length || activeFilters.mainCats.length ||
+    activeFilters.secondCats.length || activeFilters.locations.length ||
+    activeFilters.alcohol.length || activeFilters.search;
+  const btn = document.getElementById('btn-filter-toggle');
+  if (btn) btn.classList.toggle('active', !!hasFilter);
+  const rst = document.querySelector('.filter-reset');
+  if (rst) rst.classList.toggle('has-filters', !!hasFilter);
 }
 
 // ═══════════════════════════════════════════════
