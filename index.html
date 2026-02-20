@@ -184,6 +184,7 @@
       flex: 1;
       display: grid;
       grid-template-rows: 1fr auto;
+      gap: 4px;
       padding: 28px 22px 16px;
       min-height: 0;
       position: relative;
@@ -208,8 +209,6 @@
       color: var(--text-dim);
       letter-spacing: 1px;
       font-family: var(--font-mono);
-      margin-bottom: 12px;
-      flex-shrink: 0;
     }
 
     /* Zone centrale : " + texte (scrollable si nécessaire) */
@@ -255,11 +254,25 @@
 
     /* Zone basse : auteur + badges (fixe) */
     .quote-bottom {
-      padding-top: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    /* Numéro au-dessus du séparateur, aligné à droite */
+    .quote-bottom .quote-line-num {
+      text-align: right;
+      padding-bottom: 6px;
+      margin-bottom: 0;
+    }
+
+    /* Séparateur + contenu infos */
+    .quote-bottom-inner {
+      padding-top: 10px;
       border-top: 1px solid var(--border);
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 8px;
     }
 
     .quote-meta {
@@ -626,7 +639,7 @@
       display: flex;
       border-top: 1px solid var(--border);
       background: rgba(13,15,26,0.97);
-      padding-bottom: var(--safe-bottom);
+      padding-bottom: max(4px, calc(var(--safe-bottom) - 12px));
       flex-shrink: 0;
     }
 
@@ -1007,20 +1020,22 @@
       <!-- Zone centrale : citation -->
       <div class="quote-center" id="quote-center">
         <span class="quote-mark">"</span>
-        <div class="quote-line-num" id="quote-line-num">phrase 001 / 000</div>
         <p class="quote-text" id="quote-text">Appuyez sur le bouton pour découvrir une phrase.<span class="cursor-blink"></span></p>
       </div>
 
       <!-- Zone basse : auteur + badges + contexte -->
       <div class="quote-bottom" id="quote-bottom">
-        <div class="quote-meta">
-          <div class="meta-author" id="meta-author">—</div>
-          <div class="meta-secondary" id="meta-secondary"></div>
+        <div class="quote-line-num" id="quote-line-num">phrase 001 / 000</div>
+        <div class="quote-bottom-inner">
+          <div class="quote-meta">
+            <div class="meta-author" id="meta-author">—</div>
+            <div class="meta-secondary" id="meta-secondary"></div>
+          </div>
+          <!-- Badges : Volume > Catégorie > Alcool > Voir contexte -->
+          <div class="chips-row" id="chips-row"></div>
+          <!-- Détails panel -->
+          <div class="details-panel" id="details-panel"></div>
         </div>
-        <!-- Badges : Volume > Catégorie > Alcool > Voir contexte -->
-        <div class="chips-row" id="chips-row"></div>
-        <!-- Détails panel -->
-        <div class="details-panel" id="details-panel"></div>
       </div>
 
     </div>
