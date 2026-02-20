@@ -47,6 +47,8 @@
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { overscroll-behavior: none; }
+    * { -webkit-user-select: none; user-select: none; }
+    input, textarea { -webkit-user-select: text; user-select: text; }
 
     html, body {
       height: 100%;
@@ -835,13 +837,14 @@
       z-index: 100;
       backdrop-filter: blur(6px);
       align-items: flex-end;
+      justify-content: center;
     }
     .filter-overlay.open { display: flex; }
 
+    /* Le panneau occupe 85vh, fixe, flex colonne */
     .filter-menu {
       width: 100%;
       max-width: 480px;
-      margin: 0 auto;
       background: var(--panel);
       border: 1px solid var(--border);
       border-bottom: none;
@@ -849,17 +852,18 @@
       animation: sheetUp 0.28s cubic-bezier(0.32, 0.72, 0, 1);
       display: flex;
       flex-direction: column;
-      max-height: 82vh;
-      height: 82vh;
+      height: 85vh;
+      /* height fixe = le body peut vraiment scroller */
     }
 
+    /* Header fixe en haut, ne scroll pas */
     .filter-menu-header {
+      flex-shrink: 0;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 18px 10px;
+      padding: 14px 18px 12px;
       border-bottom: 1px solid var(--border);
-      margin-bottom: 4px;
     }
 
     .filter-count-txt {
@@ -885,32 +889,28 @@
     }
     .filter-reset:hover { border-color: var(--border); color: var(--text-dim); }
     .filter-reset:active { border-color: var(--border); color: var(--text-dim); }
-    .filter-reset.has-filters {
-      border-color: #e05575;
-      color: #e05575;
-    }
-    .filter-reset.has-filters:hover {
-      background: #e0557520;
-      border-color: #e05575;
-      color: #e05575;
-    }
+    .filter-reset.has-filters { border-color: #e05575; color: #e05575; }
+    .filter-reset.has-filters:hover { background: #e0557520; border-color: #e05575; color: #e05575; }
 
+    /* Body scrollable — prend tout l'espace restant */
     .filter-menu-body {
-      overflow-y: scroll;
       flex: 1;
-      padding: 6px 18px calc(var(--safe-bottom) + 22px);
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+      padding: 10px 14px calc(var(--safe-bottom) + 24px);
       display: flex;
       flex-direction: column;
       gap: 6px;
-      -webkit-overflow-scrolling: touch;
-      overscroll-behavior: contain;
+      /* On laisse les enfants définir leur propre hauteur — pas de overflow:hidden sur eux */
     }
 
     /* ── CATÉGORIES PLIABLES ── */
     .filter-cat-section {
       border: 1px solid var(--border);
       border-radius: var(--radius-sm);
-      overflow: hidden;
+      /* PAS de overflow:hidden — sinon le contenu ouvert est coupé */
+      flex-shrink: 0;
     }
 
     .filter-cat-toggle {
@@ -918,33 +918,40 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 10px 14px;
+      padding: 11px 14px;
       background: var(--card);
       border: none;
+      border-radius: var(--radius-sm);
       color: var(--text-mid);
       font-family: var(--font-mono);
       font-size: 12px;
       font-weight: 500;
       cursor: pointer;
       -webkit-tap-highlight-color: transparent;
-      transition: color 0.15s;
+      transition: color 0.15s, background 0.15s;
       letter-spacing: 0.3px;
     }
     .filter-cat-toggle:active { color: var(--accent); }
     .filter-cat-toggle.has-active { color: var(--accent); background: var(--accent-dim); }
+    .filter-cat-toggle.open { border-radius: var(--radius-sm) var(--radius-sm) 0 0; }
 
     .filter-cat-arrow {
       font-size: 10px;
       transition: transform 0.2s;
       color: var(--text-dim);
+      flex-shrink: 0;
     }
     .filter-cat-toggle.open .filter-cat-arrow { transform: rotate(90deg); }
 
+    /* Contenu pliable — display:none → flex quand .open */
     .filter-collapsible {
       display: none;
+      flex-wrap: wrap;
+      gap: 6px;
       padding: 10px 12px 12px;
       background: var(--panel);
-      gap: 6px;
+      border-top: 1px solid var(--border);
+      border-radius: 0 0 var(--radius-sm) var(--radius-sm);
     }
     .filter-collapsible.open { display: flex; }
 
@@ -957,11 +964,11 @@
 
   <!-- HEADER -->
   <header class="header">
-    <span class="app-name" id="app-title">quotes</span>
+    <span class="app-name" id="app-title">our quotes</span>
     <div class="header-actions">
       <button class="btn-fav-header" id="btn-fav-header" onclick="openHistorySheet()" title="Mes favoris">
         <span class="btn-fav-header-label">Mes phrases préfs</span>
-        <span class="btn-fav-header-icon">♡</span>
+        <span class="btn-fav-header-icon">🤍</span>
       </button>
     </div>
   </header>
@@ -995,7 +1002,7 @@
     <!-- Bottom bar -->
     <div class="bottom-bar">
       <button class="btn-fav" id="btn-fav" onclick="toggleFav()" title="Ajouter aux favoris">
-        <span class="fav-icon">🧷</span>
+        <span class="fav-icon">📌</span>
       </button>
       <button class="btn-random" onclick="showRandom()">💬 Hop une phrase au pif</button>
       <button class="btn-filter-toggle" id="btn-filter-toggle" onclick="toggleFilterMenu()" title="Filtres">🔍</button>
@@ -1379,12 +1386,12 @@ function updateFavBtn() {
   const btn = document.getElementById('btn-fav');
   btn.classList.toggle('active', isFav);
   const icon = btn.querySelector('.fav-icon');
-  if (icon) icon.textContent = isFav ? '♥️' : '🧷';
+  if (icon) icon.textContent = isFav ? '♥️' : '📌';
   // Bouton header : affiche ♥️ si au moins 1 favori
   const btnHeader = document.getElementById('btn-fav-header');
   if (btnHeader) {
     const icon = btnHeader.querySelector('.btn-fav-header-icon');
-    if (icon) icon.textContent = favorites.length > 0 ? '♥️' : '♡';
+    if (icon) icon.textContent = favorites.length > 0 ? '♥️' : '🤍';
   }
 }
 
@@ -1433,7 +1440,7 @@ function renderHistory() {
     const catHtml = cat ? ` <span class="history-cat-badge">${cat}</span>` : '';
 
     item.innerHTML =
-      '<button class="history-fav-btn' + (isFav ? ' active' : '') + '" title="Favori"><span class="fav-icon">' + (isFav ? '♥️' : '🧷') + '</span></button>' +
+      '<button class="history-fav-btn' + (isFav ? ' active' : '') + '" title="Favori"><span class="fav-icon">' + (isFav ? '♥️' : '📌') + '</span></button>' +
       '<div class="history-item-body">' +
         '<div class="history-quote">' + quoteKey + '</div>' +
         '<div class="history-author"><span class="history-author-arrow">></span>' + name + ' · ' + loc + catHtml + '</div>' +
@@ -1451,7 +1458,7 @@ function renderHistory() {
         showToast('♥️ Ajouté aux favoris');
       } else {
         favorites.splice(idx, 1);
-        favBtn.innerHTML = '<span class="fav-icon">🧷</span>';
+        favBtn.innerHTML = '<span class="fav-icon">📌</span>';
         favBtn.classList.remove('active');
         showToast('Retiré des favoris');
       }
@@ -1814,6 +1821,10 @@ window.addEventListener('DOMContentLoaded', () => {
     if (e.key === ' ' || e.key === 'Enter') showRandom();
   });
 });
+</script>
+<script>
+  document.addEventListener('selectstart', e => e.preventDefault());
+  document.addEventListener('contextmenu', e => e.preventDefault());
 </script>
 </body>
 </html>
