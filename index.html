@@ -6,9 +6,10 @@
   <meta name="theme-color" content="#0d0f1a" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="QuoteApp" />
+  <meta name="apple-mobile-web-app-title" content="Our Quotes" />
   <title>QuoteApp</title>
   <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icon.jpg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -178,39 +179,46 @@
       justify-content: space-between;
     }
 
+    /* ── QUOTE AREA : layout fixe en 3 zones ── */
     .quote-area {
       flex: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
+      display: grid;
+      grid-template-rows: 1fr auto;
       padding: 28px 22px 16px;
       min-height: 0;
       position: relative;
+      gap: 0;
     }
 
-    /* Corner brackets decoration */
+    /* Coins décoratifs fixes */
     .quote-area::before, .quote-area::after {
       content: '';
       position: absolute;
       width: 20px; height: 20px;
       border-color: var(--border-glow);
       border-style: solid;
+      pointer-events: none;
     }
-    .quote-area::before {
-      top: 16px; left: 16px;
-      border-width: 2px 0 0 2px;
-    }
-    .quote-area::after {
-      bottom: 16px; right: 16px;
-      border-width: 0 2px 2px 0;
-    }
+    .quote-area::before { top: 16px; left: 16px; border-width: 2px 0 0 2px; }
+    .quote-area::after  { bottom: 16px; right: 16px; border-width: 0 2px 2px 0; }
 
+    /* Zone haute : numéro de phrase (fixe) */
     .quote-line-num {
       font-size: 10px;
       color: var(--text-dim);
       letter-spacing: 1px;
-      margin-bottom: 16px;
       font-family: var(--font-mono);
+      margin-bottom: 12px;
+      flex-shrink: 0;
+    }
+
+    /* Zone centrale : " + texte (scrollable si nécessaire) */
+    .quote-center {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-height: 0;
+      overflow: hidden;
     }
 
     .quote-mark {
@@ -221,6 +229,7 @@
       margin-bottom: 14px;
       display: block;
       font-weight: 700;
+      flex-shrink: 0;
     }
 
     .quote-text {
@@ -230,12 +239,8 @@
       color: var(--text);
       font-weight: 300;
       font-style: italic;
-      transition: opacity 0.25s ease;
-      /* Cursor blink at end */
       position: relative;
     }
-
-    .quote-text.loading { opacity: 0.15; }
 
     .cursor-blink {
       display: inline-block;
@@ -248,10 +253,16 @@
     }
     @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
 
-    .quote-meta {
-      margin-top: 24px;
+    /* Zone basse : auteur + badges (fixe) */
+    .quote-bottom {
       padding-top: 16px;
       border-top: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .quote-meta {
       display: flex;
       flex-direction: column;
       gap: 6px;
@@ -283,9 +294,17 @@
       display: flex;
       gap: 6px;
       flex-wrap: wrap;
-      padding: 14px 0 0;
       justify-content: flex-start;
+      min-height: 28px; /* réserve de la hauteur même vide */
     }
+
+    /* Animation de transition entre phrases */
+    @keyframes quoteIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .quote-center.animating { animation: quoteIn 0.35s cubic-bezier(0.22,1,0.36,1) forwards; }
+    .quote-bottom.animating { animation: quoteIn 0.35s cubic-bezier(0.22,1,0.36,1) 0.06s both; }
 
     .chip {
       display: inline-flex;
@@ -984,20 +1003,28 @@
   <!-- SCREEN : QUOTE -->
   <div class="screen" id="screen-quote">
     <div class="quote-area">
-      <div class="quote-line-num" id="quote-line-num">phrase 001 / 000</div>
-      <span class="quote-mark">"</span>
-      <p class="quote-text" id="quote-text">Appuyez sur le bouton pour découvrir une phrase.<span class="cursor-blink"></span></p>
-      <div class="quote-meta">
-        <div class="meta-author" id="meta-author">—</div>
-        <div class="meta-secondary" id="meta-secondary"></div>
+
+      <!-- Zone centrale : citation -->
+      <div class="quote-center" id="quote-center">
+        <span class="quote-mark">"</span>
+        <div class="quote-line-num" id="quote-line-num">phrase 001 / 000</div>
+        <p class="quote-text" id="quote-text">Appuyez sur le bouton pour découvrir une phrase.<span class="cursor-blink"></span></p>
       </div>
 
-      <!-- Badges catégorie / alcool + bouton contexte -->
-      <div class="chips-row" id="chips-row"></div>
+      <!-- Zone basse : auteur + badges + contexte -->
+      <div class="quote-bottom" id="quote-bottom">
+        <div class="quote-meta">
+          <div class="meta-author" id="meta-author">—</div>
+          <div class="meta-secondary" id="meta-secondary"></div>
+        </div>
+        <!-- Badges : Volume > Catégorie > Alcool > Voir contexte -->
+        <div class="chips-row" id="chips-row"></div>
+        <!-- Détails panel -->
+        <div class="details-panel" id="details-panel"></div>
+      </div>
 
-      <!-- Détails panel -->
-      <div class="details-panel" id="details-panel"></div>
     </div>
+
 
     <!-- Bottom bar -->
     <div class="bottom-bar">
@@ -1265,27 +1292,43 @@ function showRandom() {
 
 function displayQuote(q) {
   currentQuote = q;
-  // Update line number
+
+  // Numéro de phrase (zone haute — fixe, pas animée)
   const qIdx = filteredQuotes.indexOf(q) + 1 || '?';
   const lineEl = document.getElementById('quote-line-num');
   if (lineEl) lineEl.textContent = 'phrase ' + String(qIdx).padStart(3,'0') + ' / ' + String(filteredQuotes.length).padStart(3,'0');
+
+  const centerEl = document.getElementById('quote-center');
+  const bottomEl = document.getElementById('quote-bottom');
+
+  // Retirer l'animation précédente si en cours
+  centerEl.classList.remove('animating');
+  bottomEl.classList.remove('animating');
+
+  // Forcer reflow pour relancer l'animation
+  void centerEl.offsetWidth;
+
+  // Mettre à jour le contenu
   const el = document.getElementById('quote-text');
-  el.classList.add('loading');
-  setTimeout(() => {
-    el.innerHTML = getCol(q, COL.quote) + '<span class="cursor-blink"></span>';
-    el.classList.remove('loading');
-  }, 150);
+  el.innerHTML = getCol(q, COL.quote) + '<span class="cursor-blink"></span>';
 
   const name = getCol(q, COL.name);
   const loc  = getCol(q, COL.location);
   const ts   = getCol(q, COL.ts);
 
-  document.getElementById('meta-author').textContent = name ? `— ${name}` : '—';
+  document.getElementById('meta-author').textContent = name ? '— ' + name : '—';
 
   const secEl = document.getElementById('meta-secondary');
   secEl.innerHTML = '';
-  if (loc) secEl.innerHTML += `<span>${loc}</span>`;
-  if (ts)  secEl.innerHTML += `<span>${formatDate(ts)}</span>`;
+  if (loc) secEl.innerHTML += '<span>' + loc + '</span>';
+  if (ts)  secEl.innerHTML += '<span>' + formatDate(ts) + '</span>';
+
+  // Build chips (ordre : Volume > Catégorie > Alcool > Contexte)
+  buildChips(q);
+
+  // Lancer l'animation
+  centerEl.classList.add('animating');
+  bottomEl.classList.add('animating');
 
   // Add to history
   sessionHistory.unshift(q);
@@ -1293,9 +1336,6 @@ function displayQuote(q) {
 
   // Fav state
   updateFavBtn();
-
-  // Build chips
-  buildChips(q);
 }
 
 function buildChips(q) {
@@ -1313,29 +1353,29 @@ function buildChips(q) {
 
   if (!ctx && !mainCat && !secondCat && !alcohol && !volume) return;
 
-  // ── Badge catégorie (toujours visible) ───────────────────────────────
+  // ── 1. Badge Volume ──────────────────────────────────────────────────
+  if (volume) {
+    const badge = document.createElement('span');
+    badge.className = 'info-badge vol-badge';
+    badge.textContent = '📚 Vol. ' + volume;
+    row.appendChild(badge);
+  }
+
+  // ── 2. Badge catégorie ────────────────────────────────────────────────
   if (mainCat) {
-    const cat = mainCat + (secondCat ? ` · ${secondCat}` : '');
+    const cat = mainCat + (secondCat ? ' · ' + secondCat : '');
     const badge = document.createElement('span');
     badge.className = 'info-badge cat-badge';
     badge.textContent = cat;
     row.appendChild(badge);
   }
 
-  // ── Badge alcool (toujours visible) ──────────────────────────────────
+  // ── 3. Badge alcool ───────────────────────────────────────────────────
   if (alcohol) {
     const isYes = /oui|yes|true/i.test(alcohol);
     const badge = document.createElement('span');
-    badge.className = `info-badge alc-badge ${isYes ? 'yes' : 'no'}`;
+    badge.className = 'info-badge alc-badge ' + (isYes ? 'yes' : 'no');
     badge.textContent = isYes ? '🍺 avec alcool' : '🍃 sans alcool';
-    row.appendChild(badge);
-  }
-
-  // ── Badge volume (toujours visible si présent) ──────────────────────────
-  if (volume) {
-    const badge = document.createElement('span');
-    badge.className = 'info-badge vol-badge';
-    badge.textContent = '📚 Vol. ' + volume;
     row.appendChild(badge);
   }
 
