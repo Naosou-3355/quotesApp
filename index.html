@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <meta name="theme-color" content="#0d0f1a" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -46,6 +46,7 @@
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { overscroll-behavior: none; }
 
     html, body {
       height: 100%;
@@ -848,7 +849,8 @@
       animation: sheetUp 0.28s cubic-bezier(0.32, 0.72, 0, 1);
       display: flex;
       flex-direction: column;
-      max-height: 80vh;
+      max-height: 82vh;
+      height: 82vh;
     }
 
     .filter-menu-header {
@@ -894,12 +896,14 @@
     }
 
     .filter-menu-body {
-      overflow-y: auto;
+      overflow-y: scroll;
+      flex: 1;
       padding: 6px 18px calc(var(--safe-bottom) + 22px);
       display: flex;
       flex-direction: column;
       gap: 6px;
       -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
     }
 
     /* ── CATÉGORIES PLIABLES ── */
@@ -993,7 +997,7 @@
       <button class="btn-fav" id="btn-fav" onclick="toggleFav()" title="Ajouter aux favoris">
         <span class="fav-icon">🧷</span>
       </button>
-      <button class="btn-random" onclick="showRandom()">💬 Afficher une phrase au pif</button>
+      <button class="btn-random" onclick="showRandom()">💬 Hop une phrase au pif</button>
       <button class="btn-filter-toggle" id="btn-filter-toggle" onclick="toggleFilterMenu()" title="Filtres">🔍</button>
     </div>
   </div>
@@ -1063,7 +1067,7 @@
     <div class="filter-menu-body">
       <div class="filter-section">
         <div class="filter-title">Recherche</div>
-        <input class="filter-input" type="search" placeholder="grep 'mot clé'..." id="search-input" oninput="applyFilters()" />
+        <input class="filter-input" type="search" placeholder="Rechercher par mot clé" id="search-input" oninput="applyFilters()" />
       </div>
       <div class="filter-cat-section">
         <button class="filter-cat-toggle" onclick="toggleFilterCat('authors')">
