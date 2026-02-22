@@ -80,7 +80,7 @@
     .app {
       display: flex;
       flex-direction: column;
-      height: 100dvh;
+      height: var(--app-height, 100dvh);
       max-width: 480px;
       margin: 0 auto;
       background: var(--bg);
@@ -179,16 +179,15 @@
       justify-content: space-between;
     }
 
-    /* ── QUOTE AREA : layout fixe en 3 zones ── */
+    /* ── QUOTE AREA : layout fixe ── */
     .quote-area {
       flex: 1;
-      display: grid;
-      grid-template-rows: 1fr auto;
-      gap: 4px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
       padding: 28px 22px 16px;
       min-height: 0;
       position: relative;
-      gap: 0;
     }
 
     /* Coins décoratifs fixes */
@@ -211,13 +210,18 @@
       font-family: var(--font-mono);
     }
 
-    /* Zone centrale : " + texte (scrollable si nécessaire) */
+    /* Zone centrale : hauteur fixe 50vh, jamais bougée */
     .quote-center {
+      height: 50vh;
+      min-height: 50vh;
+      max-height: 50vh;
+      flex-shrink: 0;
       display: flex;
       flex-direction: column;
       justify-content: center;
-      min-height: 0;
-      overflow: hidden;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
     }
 
     .quote-mark {
@@ -252,11 +256,18 @@
     }
     @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
 
-    /* Zone basse : auteur + badges (fixe) */
+    /* Zone basse : position fixe, ne pousse jamais vers le haut */
     .quote-bottom {
       display: flex;
       flex-direction: column;
       gap: 0;
+      flex-shrink: 0;
+      transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    /* Remonte légèrement quand le contexte est ouvert */
+    .quote-bottom.ctx-open {
+      transform: translateY(-14px);
     }
 
     /* Numéro au-dessus du séparateur, aligné à droite */
@@ -273,6 +284,13 @@
       display: flex;
       flex-direction: column;
       gap: 8px;
+    }
+
+    /* Détails panel : hauteur max pour ne pas déborder */
+    .details-panel {
+      max-height: 120px;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
     }
 
     .quote-meta {
@@ -1359,6 +1377,7 @@ function buildChips(q) {
   row.innerHTML   = '';
   panel.innerHTML = '';
   panel.classList.remove('open');
+  document.getElementById('quote-bottom').classList.remove('ctx-open');
 
   const ctx       = getCol(q, COL.context);
   const mainCat   = getCol(q, COL.mainCat);
@@ -1372,7 +1391,7 @@ function buildChips(q) {
   if (volume) {
     const badge = document.createElement('span');
     badge.className = 'info-badge vol-badge';
-    badge.textContent = '📚 Vol. ' + volume;
+    badge.textContent = '📚 ' + volume;
     row.appendChild(badge);
   }
 
@@ -1403,8 +1422,11 @@ function buildChips(q) {
       const open = panel.classList.toggle('open');
       masterChip.classList.toggle('active', open);
       masterChip.innerHTML = open
-        ? `<span>↑</span> masquer`
-        : `<span>↓</span> voir le contexte`;
+        ? '<span>↑</span> masquer'
+        : '<span>↓</span> voir le contexte';
+      // Remonter légèrement la zone basse quand contexte ouvert
+      const bottomEl = document.getElementById('quote-bottom');
+      bottomEl.classList.toggle('ctx-open', open);
     };
     row.appendChild(masterChip);
 
@@ -1716,7 +1738,7 @@ function buildStats() {
     destroyChart('volumes');
     charts.volumes = new Chart(document.getElementById('chart-volumes'), {
       type: 'bar',
-      data: { labels: volSorted.map(e=>'Vol. '+e[0]), datasets:[{ data:volSorted.map(e=>e[1]), backgroundColor: CHART_COLORS, borderRadius:8, borderSkipped:false }]},
+      data: { labels: volSorted.map(e=>e[0]), datasets:[{ data:volSorted.map(e=>e[1]), backgroundColor: CHART_COLORS, borderRadius:8, borderSkipped:false }]},
       options: chartOpts('Phrases')
     });
   }
@@ -1876,6 +1898,42 @@ window.addEventListener('DOMContentLoaded', () => {
     if (e.key === ' ' || e.key === 'Enter') showRandom();
   });
 });
+</script>
+
+<script>
+  /* ── iOS PWA VIEWPORT FIX ── */
+  (function() {
+    function setAppHeight() {
+      // Utilise window.innerHeight qui reflète la vraie hauteur visible
+      // sans la barre d'adresse Safari ni la barre système
+      document.documentElement.style.setProperty('--app-height', window.innerHeight + 'px');
+    }
+
+    // Au chargement
+    setAppHeight();
+
+    // Au resize (rotation, apparition/disparition clavier)
+    window.addEventListener('resize', setAppHeight);
+
+    // Sur iOS, orientationchange se déclenche avant que innerHeight soit mis à jour
+    // On attend un tick pour avoir la bonne valeur
+    window.addEventListener('orientationchange', function() {
+      setTimeout(setAppHeight, 200);
+    });
+
+    // Sur iOS en mode PWA, le premier rendu peut être incorrect
+    // On force un recalcul après que tout soit chargé
+    window.addEventListener('load', function() {
+      setTimeout(setAppHeight, 100);
+    });
+
+    // Recalcul au focus (ex: retour depuis une autre app)
+    document.addEventListener('visibilitychange', function() {
+      if (document.visibilityState === 'visible') {
+        setTimeout(setAppHeight, 100);
+      }
+    });
+  })();
 </script>
 <script>
   document.addEventListener('selectstart', e => e.preventDefault());
