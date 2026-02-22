@@ -4,7 +4,7 @@
   "description": "Votre collection de phrases mémorables",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#ffffff",
+  "background_color": "#0d0f1a",
   "theme_color": "#0d0f1a",
   "orientation": "portrait",
   "icons": [
