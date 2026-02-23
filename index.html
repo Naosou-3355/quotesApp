@@ -53,7 +53,6 @@
 
     html, body {
       height: 100%;
-      overflow: hidden;
       font-family: var(--font-mono);
       background: var(--bg);
       color: var(--text);
@@ -81,13 +80,12 @@
     .app {
       display: flex;
       flex-direction: column;
-      height: 100vh;
       height: 100dvh;
       max-width: 480px;
       margin: 0 auto;
       background: var(--bg);
       position: relative;
-      overflow: clip;
+      overflow: hidden;
     }
 
     /* ── HEADER ── */
@@ -169,8 +167,7 @@
     /* ── SCREENS ── */
     .screen {
       display: none;
-      flex: 1 1 0%;
-      min-height: 0;
+      flex: 1;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
     }
@@ -180,7 +177,6 @@
     #screen-quote {
       padding: 0;
       justify-content: space-between;
-      overflow: hidden;
     }
 
     /* ── QUOTE AREA : layout fixe en 3 zones ── */
@@ -221,8 +217,7 @@
       flex-direction: column;
       justify-content: center;
       min-height: 0;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
+      overflow: hidden;
     }
 
     .quote-mark {
@@ -429,7 +424,7 @@
 
     /* ── BOTTOM ACTION BAR ── */
     .bottom-bar {
-      padding: 12px 16px;
+      padding: 12px 16px calc(var(--safe-bottom) + 12px);
       display: flex;
       gap: 10px;
       align-items: center;
@@ -523,7 +518,7 @@
 
 
     /* ── STATS SCREEN ── */
-    #screen-stats { padding: 18px 18px 32px; gap: 16px; }
+    #screen-stats { padding: 18px; gap: 16px; }
 
     .stats-card {
       background: var(--panel);
@@ -576,7 +571,7 @@
 
 
     /* ── HISTORY SCREEN ── */
-    #screen-history { padding: 18px 18px 32px; gap: 10px; }
+    #screen-history { padding: 18px; gap: 10px; }
 
     .history-item {
       background: var(--panel);
