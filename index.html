@@ -18,9 +18,7 @@
     /* ── DESIGN TOKENS ── */
     :root {
       --bg:          #0d0f1a;
-      --bg2:         #111320;
-      --panel:       #151829;
-      --card:        #1a1e30;
+      --surface:     #161a2e;
       --border:      #272c46;
       --border-glow: #7c6af744;
 
@@ -131,7 +129,7 @@
       padding: 7px 11px;
       border-radius: var(--radius-sm);
       border: 1px solid var(--border);
-      background: var(--card);
+      background: var(--surface);
       cursor: pointer;
       -webkit-tap-highlight-color: transparent;
       transition: border-color 0.15s;
@@ -153,7 +151,7 @@
       width: 34px; height: 34px;
       border-radius: var(--radius-sm);
       border: 1px solid var(--border);
-      background: var(--card);
+      background: var(--surface);
       color: var(--text-mid);
       cursor: pointer;
       display: flex; align-items: center; justify-content: center;
@@ -166,12 +164,23 @@
 
     /* ── SCREENS ── */
     .screen {
-      display: none;
       flex: 1;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
+      opacity: 0;
+      visibility: hidden;
+      position: absolute;
+      inset: 0;
+      transition: opacity 0.25s ease, visibility 0.25s;
+      flex-direction: column;
     }
-    .screen.active { display: flex; flex-direction: column; }
+    .screen.active {
+      opacity: 1;
+      visibility: visible;
+      position: relative;
+      display: flex;
+      z-index: 1;
+    }
 
     /* ── QUOTE SCREEN ── */
     #screen-quote {
@@ -185,7 +194,7 @@
       display: grid;
       grid-template-rows: 1fr auto;
       gap: 0;
-      padding: 32px 24px 20px;
+      padding: 40px 28px 24px;
       min-height: 0;
       position: relative;
     }
@@ -199,8 +208,8 @@
       border-style: solid;
       pointer-events: none;
     }
-    .quote-area::before { top: 16px; left: 16px; border-width: 2px 0 0 2px; }
-    .quote-area::after  { bottom: 16px; right: 16px; border-width: 0 2px 2px 0; }
+    .quote-area::before { top: 20px; left: 18px; border-width: 2px 0 0 2px; }
+    .quote-area::after  { bottom: 20px; right: 18px; border-width: 0 2px 2px 0; }
 
     /* Zone haute : numéro de phrase (fixe) */
     .quote-line-num {
@@ -224,7 +233,7 @@
       font-size: 48px;
       line-height: 0.7;
       color: var(--accent-dim);
-      margin-bottom: 14px;
+      margin-bottom: 18px;
       display: block;
       font-weight: 700;
       flex-shrink: 0;
@@ -311,12 +320,19 @@
     }
 
     /* Animation de transition entre phrases */
+    @keyframes quoteOut {
+      from { opacity: 1; transform: translateY(0); }
+      to   { opacity: 0; transform: translateY(-6px); }
+    }
     @keyframes quoteIn {
       from { opacity: 0; transform: translateY(8px); }
       to   { opacity: 1; transform: translateY(0); }
     }
-    .quote-center.animating { animation: quoteIn 0.35s cubic-bezier(0.22,1,0.36,1) forwards; }
-    .quote-bottom.animating { animation: quoteIn 0.35s cubic-bezier(0.22,1,0.36,1) 0.06s both; }
+    .quote-center.exiting, .quote-bottom.exiting {
+      animation: quoteOut 0.18s ease-in forwards;
+    }
+    .quote-center.animating { animation: quoteIn 0.3s cubic-bezier(0.22,1,0.36,1) forwards; }
+    .quote-bottom.animating { animation: quoteIn 0.3s cubic-bezier(0.22,1,0.36,1) 0.05s both; }
 
     .chip {
       display: inline-flex;
@@ -325,7 +341,7 @@
       padding: 5px 10px;
       border-radius: var(--radius-sm);
       border: 1px solid var(--border);
-      background: var(--card);
+      background: var(--surface);
       font-size: 12px;
       font-weight: 400;
       font-family: var(--font-mono);
@@ -465,7 +481,7 @@
       height: 40px;
       border-radius: var(--radius);
       border: 1px solid var(--border);
-      background: var(--card);
+      background: var(--surface);
       color: var(--text-mid);
       cursor: pointer;
       display: flex;
@@ -482,7 +498,16 @@
       text-transform: uppercase;
       padding: 0 14px;
     }
-    .btn-fav .fav-icon { font-size: 14px; line-height: 1; }
+    .btn-fav .fav-icon { font-size: 14px; line-height: 1; display: inline-block; }
+    .btn-fav.pop .fav-icon {
+      animation: favPop 0.4s cubic-bezier(0.17, 0.89, 0.32, 1.49);
+    }
+    @keyframes favPop {
+      0%   { transform: scale(1); }
+      30%  { transform: scale(1.5); }
+      60%  { transform: scale(0.85); }
+      100% { transform: scale(1); }
+    }
     .btn-fav:active, .btn-filter-toggle:active { transform: scale(0.95); }
     .btn-fav.active { border-color: #f472b644; background: #f472b611; color: #f472b6; }
     .btn-filter-toggle .filter-label { font-size: 10px; font-weight: 600; letter-spacing: 1px; }
@@ -517,7 +542,7 @@
       font-family: var(--font-mono);
       font-size: 13px;
       color: var(--text);
-      background: var(--card);
+      background: var(--surface);
       outline: none;
       transition: border-color 0.15s, box-shadow 0.15s;
       caret-color: var(--accent);
@@ -534,7 +559,7 @@
     #screen-stats { padding: 18px; gap: 16px; }
 
     .stats-card {
-      background: var(--panel);
+      background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius);
       padding: 18px;
@@ -558,7 +583,7 @@
     }
 
     .stat-mini {
-      background: var(--card);
+      background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius-sm);
       padding: 14px 12px;
@@ -587,7 +612,7 @@
     #screen-history { padding: 18px; gap: 10px; }
 
     .history-item {
-      background: var(--panel);
+      background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius-sm);
       padding: 12px 12px 12px 14px;
@@ -635,7 +660,7 @@
       width: 36px; height: 36px;
       border-radius: var(--radius);
       border: 1px solid var(--border);
-      background: var(--card);
+      background: var(--surface);
       cursor: pointer;
       display: flex; align-items: center; justify-content: center;
       transition: all 0.15s;
@@ -727,7 +752,7 @@
       width: 100%;
       max-width: 480px;
       margin: 0 auto;
-      background: var(--panel);
+      background: var(--surface);
       border: 1px solid var(--border);
       border-bottom: none;
       border-radius: 18px 18px 0 0;
@@ -780,7 +805,7 @@
       padding: 12px 14px;
       border-radius: var(--radius-sm);
       border: 1px solid var(--border);
-      background: var(--card);
+      background: var(--surface);
       font-size: 13px;
       font-family: var(--font-body);
       font-style: italic;
@@ -815,11 +840,31 @@
     .load-title::before { content: '// '; color: var(--border); }
 
     .load-spinner {
-      width: 32px; height: 32px;
-      border: 2px solid var(--border);
-      border-top-color: var(--accent);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
+      display: none;
+    }
+
+    .skeleton-quote {
+      width: 100%;
+      max-width: 340px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      padding: 0 24px;
+    }
+    .skeleton-bar {
+      height: 14px;
+      border-radius: 6px;
+      background: linear-gradient(90deg, var(--border) 25%, var(--surface) 50%, var(--border) 75%);
+      background-size: 200% 100%;
+      animation: skeletonShimmer 1.5s ease infinite;
+    }
+    .skeleton-bar:nth-child(1) { width: 90%; }
+    .skeleton-bar:nth-child(2) { width: 75%; }
+    .skeleton-bar:nth-child(3) { width: 60%; }
+    .skeleton-bar:nth-child(4) { width: 40%; margin-top: 8px; height: 10px; opacity: 0.5; }
+    @keyframes skeletonShimmer {
+      0%   { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
@@ -829,7 +874,7 @@
       top: calc(var(--safe-top) + 72px); /* sous le header, au niveau du coin haut-gauche */
       left: 50%;
       transform: translateX(-50%) translateY(-8px);
-      background: var(--card);
+      background: var(--surface);
       border: 1px solid var(--border);
       color: var(--accent);
       padding: 9px 18px;
@@ -858,7 +903,7 @@
 
     /* ── No data overlay ── */
     #no-data-screen { display: none; }
-    #no-data-screen.active { display: flex; }
+    #no-data-screen.active { display: flex; opacity: 1; visibility: visible; position: relative; }
 
     /* ── ANIMATIONS ── */
     @keyframes glitch {
@@ -894,7 +939,7 @@
     .filter-menu {
       width: 100%;
       max-width: 480px;
-      background: var(--panel);
+      background: var(--surface);
       border: 1px solid var(--border);
       border-bottom: none;
       border-radius: 18px 18px 0 0;
@@ -973,7 +1018,7 @@
       align-items: center;
       justify-content: space-between;
       padding: 11px 14px;
-      background: var(--card);
+      background: var(--surface);
       border: none;
       border-radius: var(--radius-sm);
       color: var(--text-mid);
@@ -999,15 +1044,27 @@
 
     /* Contenu pliable — display:none → flex quand .open */
     .filter-collapsible {
-      display: none;
+      display: grid;
+      grid-template-rows: 0fr;
+      transition: grid-template-rows 0.28s ease;
+    }
+    .filter-collapsible > .filter-chips-inner {
+      overflow: hidden;
+      display: flex;
       flex-wrap: wrap;
       gap: 6px;
-      padding: 10px 12px 12px;
-      background: var(--panel);
-      border-top: 1px solid var(--border);
+      padding: 0 12px;
+      background: var(--surface);
+      border-top: 1px solid transparent;
       border-radius: 0 0 var(--radius-sm) var(--radius-sm);
     }
-    .filter-collapsible.open { display: flex; }
+    .filter-collapsible.open {
+      grid-template-rows: 1fr;
+    }
+    .filter-collapsible.open > .filter-chips-inner {
+      padding: 10px 12px 12px;
+      border-top-color: var(--border);
+    }
 
 
   </style>
@@ -1030,7 +1087,12 @@
   <!-- SCREEN : DATA LOAD -->
   <div class="screen active" id="no-data-screen">
     <div class="load-area">
-      <div class="load-spinner"></div>
+      <div class="skeleton-quote">
+        <div class="skeleton-bar"></div>
+        <div class="skeleton-bar"></div>
+        <div class="skeleton-bar"></div>
+        <div class="skeleton-bar"></div>
+      </div>
       <div class="load-title">loading data.json</div>
     </div>
   </div>
@@ -1144,37 +1206,37 @@
         <button class="filter-cat-toggle" onclick="toggleFilterCat('authors')">
           <span>👤 Auteur</span><span class="filter-cat-arrow">▸</span>
         </button>
-        <div class="filter-chips filter-collapsible" id="filter-authors"></div>
+        <div class="filter-collapsible" id="filter-authors"><div class="filter-chips-inner"></div></div>
       </div>
       <div class="filter-cat-section">
         <button class="filter-cat-toggle" onclick="toggleFilterCat('main-cats')">
           <span>🏷 Catégorie principale</span><span class="filter-cat-arrow">▸</span>
         </button>
-        <div class="filter-chips filter-collapsible" id="filter-main-cats"></div>
+        <div class="filter-collapsible" id="filter-main-cats"><div class="filter-chips-inner"></div></div>
       </div>
       <div class="filter-cat-section">
         <button class="filter-cat-toggle" onclick="toggleFilterCat('second-cats')">
           <span>🔖 Catégorie secondaire</span><span class="filter-cat-arrow">▸</span>
         </button>
-        <div class="filter-chips filter-collapsible" id="filter-second-cats"></div>
+        <div class="filter-collapsible" id="filter-second-cats"><div class="filter-chips-inner"></div></div>
       </div>
       <div class="filter-cat-section">
         <button class="filter-cat-toggle" onclick="toggleFilterCat('locations')">
           <span>📍 Lieu</span><span class="filter-cat-arrow">▸</span>
         </button>
-        <div class="filter-chips filter-collapsible" id="filter-locations"></div>
+        <div class="filter-collapsible" id="filter-locations"><div class="filter-chips-inner"></div></div>
       </div>
       <div class="filter-cat-section">
         <button class="filter-cat-toggle" onclick="toggleFilterCat('alcohol')">
           <span>🍺 Alcool</span><span class="filter-cat-arrow">▸</span>
         </button>
-        <div class="filter-chips filter-collapsible" id="filter-alcohol"></div>
+        <div class="filter-collapsible" id="filter-alcohol"><div class="filter-chips-inner"></div></div>
       </div>
       <div class="filter-cat-section">
         <button class="filter-cat-toggle" onclick="toggleFilterCat('volumes')">
           <span>📚 Volume</span><span class="filter-cat-arrow">▸</span>
         </button>
-        <div class="filter-chips filter-collapsible" id="filter-volumes"></div>
+        <div class="filter-collapsible" id="filter-volumes"><div class="filter-chips-inner"></div></div>
       </div>
     </div>
   </div>
@@ -1196,14 +1258,22 @@
 // ═══════════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════════
-let allQuotes = [];
-let filteredQuotes = [];
-let currentQuote = null;
-let sessionHistory = [];
-let favorites = JSON.parse(localStorage.getItem('qapp_favs') || '[]');
-let activeFilters = { authors:[], mainCats:[], secondCats:[], locations:[], alcohol:[], volumes:[], search:'' };
-let charts = {};
-let dataLoaded = false;
+const App = {
+  allQuotes: [],
+  filteredQuotes: [],
+  currentQuote: null,
+  sessionHistory: [],
+  favorites: JSON.parse(localStorage.getItem('qapp_favs') || '[]'),
+  activeFilters: { authors:[], mainCats:[], secondCats:[], locations:[], alcohol:[], volumes:[], search:'' },
+  charts: {},
+  dataLoaded: false,
+  shuffleQueue: [],
+  chartJsLoaded: false,
+  toastTimer: null,
+};
+
+// Shorthand aliases for readability in hot paths
+const { activeFilters } = App;
 
 // ── XSS Protection ──
 function esc(str) {
@@ -1220,16 +1290,16 @@ function quoteId(q) {
 
 // Column mapping (flexible)
 const COL = {
-  ts:        ['Horodateur','horodateur','timestamp'],
-  quote:     ['Insert quote','insert quote','Quote','quote','phrase'],
-  name:      ['Insert name (e.g: John. D)','Insert name','name','auteur','Auteur'],
-  location:  ['Insert location','Location','lieu','Lieu'],
-  mainCat:   ['Main category','main category','Catégorie principale'],
-  secondCat: ['Second category','second category','Catégorie secondaire'],
-  alcohol:   ['Under alcohol ?','Under alcohol','alcool','Alcool'],
-  context:   ['Context','context','Contexte'],
-  wam:       ['Si wam, avec qui ?','Si wam','wam'],
-  volume:    ['Volume','volume','Vol','vol'],
+  ts:        ['date','Horodateur','horodateur','timestamp'],
+  quote:     ['q','Insert quote','insert quote','Quote','quote','phrase'],
+  name:      ['name','Insert name (e.g: John. D)','Insert name','auteur','Auteur'],
+  location:  ['loc','Insert location','Location','lieu','Lieu'],
+  mainCat:   ['cat1','Main category','main category','Catégorie principale'],
+  secondCat: ['cat2','Second category','second category','Catégorie secondaire'],
+  alcohol:   ['alc','Under alcohol ?','Under alcohol','alcool','Alcool'],
+  context:   ['ctx','Context','context','Contexte'],
+  wam:       ['wam','Si wam, avec qui ?','Si wam'],
+  volume:    ['vol','Volume','volume','Vol'],
 };
 
 function getCol(row, keys) {
@@ -1299,9 +1369,9 @@ function showLoadError(msg) {
 }
 
 function initData(data) {
-  allQuotes = data.filter(r => getCol(r, COL.quote));
-  filteredQuotes = [...allQuotes];
-  dataLoaded = true;
+  App.allQuotes = data.filter(r => getCol(r, COL.quote));
+  App.filteredQuotes = [...App.allQuotes];
+  App.dataLoaded = true;
 
   document.getElementById('no-data-screen').classList.remove('active');
   document.getElementById('bottom-nav').style.display = '';
@@ -1309,7 +1379,7 @@ function initData(data) {
   buildFilters();
   buildQueue();
   showRandom();
-  showToast(`${allQuotes.length} phrases chargées`);
+  showToast(`${App.allQuotes.length} phrases chargées`);
 }
 
 
@@ -1322,7 +1392,7 @@ function hideAllScreens() {
 }
 
 function navigate(screen) {
-  if (!dataLoaded && screen !== 'load') return;
+  if (!App.dataLoaded && screen !== 'load') return;
   hideAllScreens();
   document.getElementById('screen-' + screen).classList.add('active');
   const navBtn = document.getElementById('nav-' + screen);
@@ -1336,69 +1406,81 @@ function navigate(screen) {
 //  QUOTE DISPLAY
 // ═══════════════════════════════════════════════
 // File de lecture mélangée : chaque phrase est jouée une fois avant de recommencer
-let shuffleQueue = [];
+// App.shuffleQueue is in App.shuffleQueue
 
 function buildQueue() {
-  // Fisher-Yates shuffle sur une copie de filteredQuotes
-  shuffleQueue = [...filteredQuotes];
-  for (let i = shuffleQueue.length - 1; i > 0; i--) {
+  // Fisher-Yates shuffle sur une copie de App.filteredQuotes
+  App.shuffleQueue = [...App.filteredQuotes];
+  for (let i = App.shuffleQueue.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [shuffleQueue[i], shuffleQueue[j]] = [shuffleQueue[j], shuffleQueue[i]];
+    [App.shuffleQueue[i], App.shuffleQueue[j]] = [App.shuffleQueue[j], App.shuffleQueue[i]];
   }
 }
 
 function showRandom() {
-  if (!filteredQuotes.length) {
+  if (!App.filteredQuotes.length) {
     showToast('Aucune phrase avec ces filtres');
     return;
   }
-  if (!shuffleQueue.length) { buildQueue(); }
-  displayQuote(shuffleQueue.pop());
+  if (!App.shuffleQueue.length) { buildQueue(); }
+  displayQuote(App.shuffleQueue.pop());
 }
 
 function displayQuote(q) {
-  currentQuote = q;
-
-  // Numéro de phrase (zone haute — fixe, pas animée)
-  const qIdx = filteredQuotes.indexOf(q) + 1 || '?';
-  const lineEl = document.getElementById('quote-line-num');
-  if (lineEl) lineEl.textContent = 'phrase ' + String(qIdx).padStart(3,'0') + ' / ' + String(filteredQuotes.length).padStart(3,'0');
+  App.currentQuote = q;
 
   const centerEl = document.getElementById('quote-center');
   const bottomEl = document.getElementById('quote-bottom');
 
-  // Retirer l'animation précédente si en cours
-  centerEl.classList.remove('animating');
-  bottomEl.classList.remove('animating');
+  // Content update function (called after exit or immediately on first load)
+  function applyContent() {
+    // Numéro de phrase
+    const qIdx = App.filteredQuotes.indexOf(q) + 1 || '?';
+    const lineEl = document.getElementById('quote-line-num');
+    if (lineEl) lineEl.textContent = 'phrase ' + String(qIdx).padStart(3,'0') + ' / ' + String(App.filteredQuotes.length).padStart(3,'0');
 
-  // Forcer reflow pour relancer l'animation
-  void centerEl.offsetWidth;
+    const el = document.getElementById('quote-text');
+    el.innerHTML = esc(getCol(q, COL.quote)) + '<span class="cursor-blink"></span>';
 
-  // Mettre à jour le contenu
-  const el = document.getElementById('quote-text');
-  el.innerHTML = esc(getCol(q, COL.quote)) + '<span class="cursor-blink"></span>';
+    const name = getCol(q, COL.name);
+    const loc  = getCol(q, COL.location);
+    const ts   = getCol(q, COL.ts);
 
-  const name = getCol(q, COL.name);
-  const loc  = getCol(q, COL.location);
-  const ts   = getCol(q, COL.ts);
+    document.getElementById('meta-author').textContent = name ? '— ' + name : '—';
 
-  document.getElementById('meta-author').textContent = name ? '— ' + name : '—';
+    const secEl = document.getElementById('meta-secondary');
+    secEl.innerHTML = '';
+    if (loc) secEl.innerHTML += '<span>' + esc(loc) + '</span>';
+    if (ts)  secEl.innerHTML += '<span>' + esc(formatDate(ts)) + '</span>';
 
-  const secEl = document.getElementById('meta-secondary');
-  secEl.innerHTML = '';
-  if (loc) secEl.innerHTML += '<span>' + esc(loc) + '</span>';
-  if (ts)  secEl.innerHTML += '<span>' + esc(formatDate(ts)) + '</span>';
+    buildChips(q);
 
-  // Build chips (ordre : Volume > Catégorie > Alcool > Contexte)
-  buildChips(q);
+    // Enter animation
+    centerEl.classList.remove('exiting');
+    bottomEl.classList.remove('exiting');
+    centerEl.classList.remove('animating');
+    bottomEl.classList.remove('animating');
+    void centerEl.offsetWidth;
+    centerEl.classList.add('animating');
+    bottomEl.classList.add('animating');
+  }
 
-  // Lancer l'animation
-  centerEl.classList.add('animating');
-  bottomEl.classList.add('animating');
+  // If already displaying content, do exit → enter crossfade
+  const hasContent = document.getElementById('quote-text').textContent.length > 40;
+  if (hasContent) {
+    centerEl.classList.remove('animating', 'exiting');
+    bottomEl.classList.remove('animating', 'exiting');
+    void centerEl.offsetWidth;
+    centerEl.classList.add('exiting');
+    bottomEl.classList.add('exiting');
+    setTimeout(applyContent, 180);
+  } else {
+    applyContent();
+  }
 
   // Add to history
-  sessionHistory.unshift(q);
-  if (sessionHistory.length > 50) sessionHistory.pop();
+  App.sessionHistory.unshift(q);
+  if (App.sessionHistory.length > 50) App.sessionHistory.pop();
 
   // Fav state
   updateFavBtn();
@@ -1479,28 +1561,34 @@ function buildChips(q) {
 // ── Shared favorite toggle helper ──
 function setFavorite(q) {
   const qid = quoteId(q);
-  const idx = favorites.findIndex(f => quoteId(f) === qid);
+  const idx = App.favorites.findIndex(f => quoteId(f) === qid);
   const added = idx === -1;
   if (added) {
-    favorites.push(q);
+    App.favorites.push(q);
   } else {
-    favorites.splice(idx, 1);
+    App.favorites.splice(idx, 1);
   }
-  localStorage.setItem('qapp_favs', JSON.stringify(favorites));
+  localStorage.setItem('qapp_favs', JSON.stringify(App.favorites));
   updateFavBtn();
   showToast(added ? '♥️ Ajouté aux favoris' : 'Retiré des favoris');
   return added;
 }
 
 function toggleFav() {
-  if (!currentQuote) return;
-  setFavorite(currentQuote);
+  if (!App.currentQuote) return;
+  setFavorite(App.currentQuote);
+  // Trigger pop animation
+  const btn = document.getElementById('btn-fav');
+  btn.classList.remove('pop');
+  void btn.offsetWidth;
+  btn.classList.add('pop');
+  setTimeout(() => btn.classList.remove('pop'), 450);
 }
 
 function updateFavBtn() {
-  if (!currentQuote) return;
-  const qid = quoteId(currentQuote);
-  const isFav = favorites.some(f => quoteId(f) === qid);
+  if (!App.currentQuote) return;
+  const qid = quoteId(App.currentQuote);
+  const isFav = App.favorites.some(f => quoteId(f) === qid);
   const btn = document.getElementById('btn-fav');
   btn.classList.toggle('active', isFav);
   const icon = btn.querySelector('.fav-icon');
@@ -1509,17 +1597,17 @@ function updateFavBtn() {
   const btnHeader = document.getElementById('btn-fav-header');
   if (btnHeader) {
     const hIcon = btnHeader.querySelector('.btn-fav-header-icon');
-    if (hIcon) hIcon.textContent = favorites.length > 0 ? '♥️' : '🤍';
+    if (hIcon) hIcon.textContent = App.favorites.length > 0 ? '♥️' : '🤍';
   }
 }
 
 function openHistorySheet() {
   const list = document.getElementById('fav-list');
   list.innerHTML = '';
-  if (!favorites.length) {
+  if (!App.favorites.length) {
     list.innerHTML = '<p style="color:var(--ink-light);font-size:14px;text-align:center;padding:20px">Aucun favori pour l\'instant</p>';
   } else {
-    favorites.forEach(q => {
+    App.favorites.forEach(q => {
       const item = document.createElement('div');
       item.className = 'sheet-item';
       item.textContent = getCol(q, COL.quote);
@@ -1543,7 +1631,7 @@ function closeHistorySheet(e) {
   }
 }
 
-// ── Swipe-down to dismiss favorites sheet ──
+// ── Swipe-down to dismiss App.favorites sheet ──
 (function initFavSheetDrag() {
   let startY = 0, currentY = 0, dragging = false;
   const getSheet = () => document.querySelector('#history-sheet .sheet');
@@ -1604,15 +1692,15 @@ function renderHistory() {
   const list = document.getElementById('history-list');
   const empty = document.getElementById('history-empty');
   list.innerHTML = '';
-  if (!sessionHistory.length) { empty.style.display = 'flex'; return; }
+  if (!App.sessionHistory.length) { empty.style.display = 'flex'; return; }
   empty.style.display = 'none';
-  sessionHistory.forEach(q => {
+  App.sessionHistory.forEach(q => {
     const item = document.createElement('div');
     item.className = 'history-item';
 
     const quoteKey = getCol(q, COL.quote);
     const qid = quoteId(q);
-    const isFav = favorites.some(f => quoteId(f) === qid);
+    const isFav = App.favorites.some(f => quoteId(f) === qid);
     const name  = getCol(q, COL.name) || '?';
     const loc   = getCol(q, COL.location) || '';
     const cat   = getCol(q, COL.mainCat) || '';
@@ -1645,7 +1733,7 @@ function renderHistory() {
 //  FILTERS
 // ═══════════════════════════════════════════════
 function buildFilters() {
-  const uniq = (key) => [...new Set(allQuotes.map(q => getCol(q, key)).filter(Boolean))].sort();
+  const uniq = (key) => [...new Set(App.allQuotes.map(q => getCol(q, key)).filter(Boolean))].sort();
 
   buildChipFilter('filter-authors', uniq(COL.name), 'authors');
   buildChipFilter('filter-main-cats', uniq(COL.mainCat), 'mainCats');
@@ -1656,7 +1744,8 @@ function buildFilters() {
 }
 
 function buildChipFilter(containerId, values, filterKey) {
-  const el = document.getElementById(containerId);
+  const container = document.getElementById(containerId);
+  const el = container.querySelector('.filter-chips-inner') || container;
   el.innerHTML = '';
   values.forEach(v => {
     const chip = document.createElement('button');
@@ -1675,7 +1764,7 @@ function buildChipFilter(containerId, values, filterKey) {
 
 function applyFilters() {
   activeFilters.search = document.getElementById('search-input').value.toLowerCase();
-  filteredQuotes = allQuotes.filter(q => {
+  App.filteredQuotes = App.allQuotes.filter(q => {
     if (activeFilters.authors.length && !activeFilters.authors.includes(getCol(q, COL.name))) return false;
     if (activeFilters.mainCats.length && !activeFilters.mainCats.includes(getCol(q, COL.mainCat))) return false;
     if (activeFilters.secondCats.length && !activeFilters.secondCats.includes(getCol(q, COL.secondCat))) return false;
@@ -1695,7 +1784,13 @@ function applyFilters() {
 }
 
 function resetFilters() {
-  activeFilters = { authors:[], mainCats:[], secondCats:[], locations:[], alcohol:[], volumes:[], search:'' };
+  activeFilters.authors = [];
+  activeFilters.mainCats = [];
+  activeFilters.secondCats = [];
+  activeFilters.locations = [];
+  activeFilters.alcohol = [];
+  activeFilters.volumes = [];
+  activeFilters.search = '';
   // Vider la recherche
   const si = document.getElementById('search-input');
   if (si) si.value = '';
@@ -1704,7 +1799,7 @@ function resetFilters() {
   // Retirer l'état actif des boutons de catégorie
   document.querySelectorAll('.filter-cat-toggle').forEach(t => t.classList.remove('has-active'));
   // Remettre toutes les phrases
-  filteredQuotes = [...allQuotes];
+  App.filteredQuotes = [...App.allQuotes];
   buildQueue();
   updateFilterCount();
   updateFilterBtnState();
@@ -1717,26 +1812,26 @@ function resetFilters() {
 const CHART_COLORS = ['#7c6af7','#4ade80','#f472b6','#22d3ee','#fbbf24','#a78bfa','#34d399','#fb7185'];
 
 function destroyChart(id) {
-  if (charts[id]) { charts[id].destroy(); delete charts[id]; }
+  if (App.charts[id]) { App.charts[id].destroy(); delete App.charts[id]; }
 }
 
-let _chartJsLoaded = false;
+// chartJsLoaded is in App.chartJsLoaded
 async function loadChartJS() {
-  if (_chartJsLoaded) return;
+  if (App.chartJsLoaded) return;
   return new Promise((resolve, reject) => {
     const s = document.createElement('script');
     s.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js';
-    s.onload = () => { _chartJsLoaded = true; resolve(); };
+    s.onload = () => { App.chartJsLoaded = true; resolve(); };
     s.onerror = () => reject(new Error('Chart.js failed to load'));
     document.head.appendChild(s);
   });
 }
 
 async function buildStats() {
-  if (!allQuotes.length) return;
+  if (!App.allQuotes.length) return;
 
   // Lazy-load Chart.js on first Stats visit
-  if (!_chartJsLoaded) {
+  if (!App.chartJsLoaded) {
     try {
       await loadChartJS();
     } catch (e) {
@@ -1747,26 +1842,26 @@ async function buildStats() {
   }
 
   // Overview
-  const alcoholCount = allQuotes.filter(q => /oui|yes|true/i.test(getCol(q, COL.alcohol))).length;
-  const uniqAuthors = new Set(allQuotes.map(q=>getCol(q,COL.name))).size;
+  const alcoholCount = App.allQuotes.filter(q => /oui|yes|true/i.test(getCol(q, COL.alcohol))).length;
+  const uniqAuthors = new Set(App.allQuotes.map(q=>getCol(q,COL.name))).size;
   // Catégorie la plus représentée (2ème résultat de mainCat, présenté comme #1)
   const catFreq = {};
-  allQuotes.forEach(q => { const c = getCol(q,COL.mainCat); if (c) catFreq[c]=(catFreq[c]||0)+1; });
+  App.allQuotes.forEach(q => { const c = getCol(q,COL.mainCat); if (c) catFreq[c]=(catFreq[c]||0)+1; });
   const overviewCatSorted = Object.entries(catFreq).sort((a,b)=>b[1]-a[1]);
   const topCatName = overviewCatSorted.length >= 2 ? overviewCatSorted[1][0] : (overviewCatSorted[0] ? overviewCatSorted[0][0] : '—');
 
   document.getElementById('stat-overview').innerHTML =
-    '<div class="stat-mini"><div class="num">' + allQuotes.length + '</div><div class="lbl">Phrases</div></div>' +
+    '<div class="stat-mini"><div class="num">' + App.allQuotes.length + '</div><div class="lbl">Phrases</div></div>' +
     '<div class="stat-mini"><div class="num">' + uniqAuthors + '</div><div class="lbl">Auteurs</div></div>' +
     '<div class="stat-mini"><div class="num">' + alcoholCount + '</div><div class="lbl">Avec alcool</div></div>' +
     '<div class="stat-mini"><div class="num" style="font-size:14px;line-height:1.2">' + esc(topCatName) + '</div><div class="lbl">Catégorie #1</div></div>';
 
   // Persons chart — top 10
   const personCounts = {};
-  allQuotes.forEach(q => { const n = getCol(q,COL.name)||'?'; personCounts[n] = (personCounts[n]||0)+1; });
+  App.allQuotes.forEach(q => { const n = getCol(q,COL.name)||'?'; personCounts[n] = (personCounts[n]||0)+1; });
   const personSorted = Object.entries(personCounts).sort((a,b)=>b[1]-a[1]).slice(0,10);
   destroyChart('persons');
-  charts.persons = new Chart(document.getElementById('chart-persons'), {
+  App.charts.persons = new Chart(document.getElementById('chart-persons'), {
     type: 'bar',
     data: { labels: personSorted.map(e=>e[0]), datasets:[{ data: personSorted.map(e=>e[1]), backgroundColor: CHART_COLORS, borderRadius:8, borderSkipped:false }]},
     options: chartOpts('Phrases')
@@ -1774,7 +1869,7 @@ async function buildStats() {
 
   // Main cats — sans contour + pourcentages dans le donut
   const catCounts = {};
-  allQuotes.forEach(q => { const c = getCol(q,COL.mainCat)||'Autre'; catCounts[c]=(catCounts[c]||0)+1; });
+  App.allQuotes.forEach(q => { const c = getCol(q,COL.mainCat)||'Autre'; catCounts[c]=(catCounts[c]||0)+1; });
   const catSorted = Object.entries(catCounts).sort((a,b)=>b[1]-a[1]);
   const catTotal = catSorted.reduce((s,e)=>s+e[1],0);
   destroyChart('cats');
@@ -1804,7 +1899,7 @@ async function buildStats() {
       ctx.restore();
     }
   };
-  charts.cats = new Chart(document.getElementById('chart-cats'), {
+  App.charts.cats = new Chart(document.getElementById('chart-cats'), {
     type: 'doughnut',
     data: { labels: catSorted.map(e=>e[0]), datasets:[{ data: catSorted.map(e=>e[1]), backgroundColor: CHART_COLORS, borderWidth:0, borderColor:'transparent', hoverOffset:6 }]},
     options: {
@@ -1823,9 +1918,9 @@ async function buildStats() {
 
   // Hours
   const hourCounts = Array(24).fill(0);
-  allQuotes.forEach(q => { const d = parseDate(getCol(q,COL.ts)); if(d) hourCounts[d.getHours()]++; });
+  App.allQuotes.forEach(q => { const d = parseDate(getCol(q,COL.ts)); if(d) hourCounts[d.getHours()]++; });
   destroyChart('hours');
-  charts.hours = new Chart(document.getElementById('chart-hours'), {
+  App.charts.hours = new Chart(document.getElementById('chart-hours'), {
     type: 'line',
     data: { labels: Array.from({length:24},(_,i)=>`${i}h`), datasets:[{ data:hourCounts, borderColor:'#5b4ff5', backgroundColor:'rgba(91,79,245,0.1)', fill:true, tension:0.4, pointRadius:3, pointBackgroundColor:'#5b4ff5' }]},
     options: chartOpts('Phrases')
@@ -1833,13 +1928,13 @@ async function buildStats() {
 
   // Locations
   const locCounts = {};
-  allQuotes.forEach(q => {
+  App.allQuotes.forEach(q => {
     const l = getCol(q,COL.location)||'?';
     if (!/no data/i.test(l)) locCounts[l]=(locCounts[l]||0)+1;
   });
   const locSorted = Object.entries(locCounts).sort((a,b)=>b[1]-a[1]).slice(0,7);
   destroyChart('locations');
-  charts.locations = new Chart(document.getElementById('chart-locations'), {
+  App.charts.locations = new Chart(document.getElementById('chart-locations'), {
     type: 'bar',
     data: { labels: locSorted.map(e=>e[0]), datasets:[{ data:locSorted.map(e=>e[1]), backgroundColor: CHART_COLORS, borderRadius:8, borderSkipped:false }]},
     options: { ...chartOpts('Phrases'), indexAxis:'y' }
@@ -1847,14 +1942,14 @@ async function buildStats() {
 
   // Volumes
   const volCounts = {};
-  allQuotes.forEach(q => { const v = getCol(q,COL.volume); if(v) volCounts[v]=(volCounts[v]||0)+1; });
+  App.allQuotes.forEach(q => { const v = getCol(q,COL.volume); if(v) volCounts[v]=(volCounts[v]||0)+1; });
   if (Object.keys(volCounts).length) {
     const volSorted = Object.entries(volCounts).sort((a,b)=>{
       const na = parseInt(a[0])||0, nb = parseInt(b[0])||0;
       return na - nb || a[0].localeCompare(b[0]);
     });
     destroyChart('volumes');
-    charts.volumes = new Chart(document.getElementById('chart-volumes'), {
+    App.charts.volumes = new Chart(document.getElementById('chart-volumes'), {
       type: 'bar',
       data: { labels: volSorted.map(e=>e[0]), datasets:[{ data:volSorted.map(e=>e[1]), backgroundColor: CHART_COLORS, borderRadius:8, borderSkipped:false }]},
       options: chartOpts('Phrases')
@@ -2059,13 +2154,13 @@ function updateFilterBtnState() {
 // ═══════════════════════════════════════════════
 //  TOAST
 // ═══════════════════════════════════════════════
-let toastTimer;
+// App.toastTimer is in App.toastTimer
 function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+  clearTimeout(App.toastTimer);
+  App.toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
 }
 
 // ═══════════════════════════════════════════════
@@ -2088,6 +2183,26 @@ window.addEventListener('DOMContentLoaded', () => {
   document.addEventListener('keydown', e => {
     if (e.key === ' ' || e.key === 'Enter') showRandom();
   });
+
+  // Swipe gauche/droite sur l'écran quote → phrase suivante
+  (function initQuoteSwipe() {
+    let startX = 0, startY = 0;
+    const quoteScreen = document.getElementById('screen-quote');
+
+    quoteScreen.addEventListener('touchstart', e => {
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+    }, { passive: true });
+
+    quoteScreen.addEventListener('touchend', e => {
+      const dx = e.changedTouches[0].clientX - startX;
+      const dy = e.changedTouches[0].clientY - startY;
+      // Only trigger on horizontal swipes (dx > 80px, and more horizontal than vertical)
+      if (Math.abs(dx) > 80 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+        showRandom();
+      }
+    });
+  })();
 });
 </script>
 <script>

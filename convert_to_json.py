@@ -109,6 +109,32 @@ def clean_value(val):
     return s
 
 
+# ── Mapping clés verbeuses → clés compactes ──
+# Réduit la taille de data.json de ~27%
+# L'app (index.html) attend ces clés courtes
+KEY_MAP = {
+    'volume':              'vol',
+    'horodateur':          'date',
+    'insert quote':        'q',
+    'insert name':         'name',
+    'insert location':     'loc',
+    'main category':       'cat1',
+    'second category':     'cat2',
+    'under alcohol':       'alc',
+    'context':             'ctx',
+    'si wam':              'wam',
+}
+
+
+def compact_key(col_name):
+    """Mappe un nom de colonne Google Sheets vers sa clé compacte."""
+    lower = col_name.lower().strip()
+    for pattern, short in KEY_MAP.items():
+        if lower.startswith(pattern):
+            return short
+    return col_name  # fallback: garder tel quel
+
+
 def convert(filepath):
     df = load_file(filepath)
     print(f"\n✓   {len(df)} lignes lues")
@@ -118,10 +144,20 @@ def convert(filepath):
     if not quote_cols:
         print("⚠️   Colonne 'Insert quote' non trouvée — toutes les lignes seront exportées.")
 
+    # Build key mapping for this file's columns
+    col_map = {col: compact_key(col) for col in df.columns}
+    mapped_cols = {v: k for k, v in col_map.items()}
+    print(f"🔑  Mapping des clés :")
+    for orig, short in col_map.items():
+        if orig != short:
+            print(f"     {orig}  →  {short}")
+
     records, skipped = [], 0
     for _, row in df.iterrows():
-        record = {col: clean_value(row[col]) for col in df.columns}
-        if quote_cols and not record.get(quote_cols[0]):
+        record = {col_map[col]: clean_value(row[col]) for col in df.columns}
+        # Check for empty quote using the mapped key
+        q_key = col_map.get(quote_cols[0]) if quote_cols else None
+        if q_key and not record.get(q_key):
             skipped += 1
             continue
         records.append(record)
@@ -130,19 +166,18 @@ def convert(filepath):
         print(f"ℹ️   {skipped} ligne(s) ignorée(s) (phrase vide)")
 
     # Aperçu
-    print(f"👁   Aperçu des 3 premières phrases :")
-    qk = quote_cols[0] if quote_cols else None
-    nk = next((c for c in df.columns if "name" in c.lower()), None)
+    print(f"\n👁   Aperçu des 3 premières phrases :")
     for r in records[:3]:
-        q = (r.get(qk, "?") or "?")[:70]
-        a = r.get(nk, "?") if nk else "?"
+        q = (r.get('q', '?') or '?')[:70]
+        a = r.get('name', '?')
         print(f"     [{a}]  {q}")
 
     output_path = Path(filepath).parent / "data.json"
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(records, f, ensure_ascii=False, indent=2)
 
-    print(f"\n✅  {len(records)} phrases → {output_path}")
+    size_kb = output_path.stat().st_size / 1024
+    print(f"\n✅  {len(records)} phrases → {output_path} ({size_kb:.0f} ko)")
     print("\n   Uploadez ce data.json sur votre dépôt GitHub Pages pour mettre à jour l'app.\n")
 
 
