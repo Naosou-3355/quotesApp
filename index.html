@@ -525,6 +525,11 @@
       color: #fff;
       background: rgba(124,106,247,0.25);
       box-shadow: 0 0 14px rgba(124,106,247,0.3), inset 0 0 10px rgba(124,106,247,0.1);
+      animation: filterPulse 2s ease-in-out infinite;
+    }
+    @keyframes filterPulse {
+      0%, 100% { box-shadow: 0 0 14px rgba(124,106,247,0.3), inset 0 0 10px rgba(124,106,247,0.1); }
+      50%      { box-shadow: 0 0 20px rgba(124,106,247,0.5), inset 0 0 14px rgba(124,106,247,0.15); }
     }
 
     /* ── FILTER SCREEN ── */
@@ -1177,7 +1182,7 @@
         <span class="fav-icon">📌</span>
       </button>
       <button class="btn-random" onclick="showRandom()" aria-label="Afficher une citation aléatoire">Ménestrel, une autre</button>
-      <button class="btn-filter-toggle" id="btn-filter-toggle" onclick="toggleFilterMenu()" title="Filtres" aria-label="Ouvrir les filtres">🔍 <span class="filter-label">Filtrer</span></button>
+      <button class="btn-filter-toggle" id="btn-filter-toggle" title="Filtres" aria-label="Ouvrir les filtres">🔍 <span class="filter-label">Filtrer</span></button>
     </div>
   </div>
 
@@ -1907,6 +1912,13 @@ function destroyChart(id) {
   if (App.charts[id]) { App.charts[id].destroy(); delete App.charts[id]; }
 }
 
+// Filter out n/a, empty, null, "?", "no data" etc. from stats
+function isValid(val) {
+  if (!val) return false;
+  const v = String(val).trim().toLowerCase();
+  return v !== '' && v !== 'n/a' && v !== 'na' && v !== '?' && !/^no data/i.test(v);
+}
+
 // chartJsLoaded is in App.chartJsLoaded
 async function loadChartJS() {
   if (App.chartJsLoaded) return;
@@ -1939,23 +1951,27 @@ async function buildStats() {
   }
 
   // Overview
-  const alcoholCount = App.allQuotes.filter(q => /oui|yes|true/i.test(getCol(q, COL.alcohol))).length;
-  const uniqAuthors = new Set(App.allQuotes.map(q=>getCol(q,COL.name))).size;
+  const uniqAuthors = new Set(App.allQuotes.map(q=>getCol(q,COL.name)).filter(isValid)).size;
+  // Top location
+  const locFreqOverview = {};
+  App.allQuotes.forEach(q => { const l = getCol(q,COL.location); if (isValid(l)) locFreqOverview[l]=(locFreqOverview[l]||0)+1; });
+  const topLocSorted = Object.entries(locFreqOverview).sort((a,b)=>b[1]-a[1]);
+  const topLocName = topLocSorted.length ? topLocSorted[0][0] : '—';
   // Catégorie la plus représentée (2ème résultat de mainCat, présenté comme #1)
   const catFreq = {};
-  App.allQuotes.forEach(q => { const c = getCol(q,COL.mainCat); if (c) catFreq[c]=(catFreq[c]||0)+1; });
+  App.allQuotes.forEach(q => { const c = getCol(q,COL.mainCat); if (isValid(c)) catFreq[c]=(catFreq[c]||0)+1; });
   const overviewCatSorted = Object.entries(catFreq).sort((a,b)=>b[1]-a[1]);
   const topCatName = overviewCatSorted.length >= 2 ? overviewCatSorted[1][0] : (overviewCatSorted[0] ? overviewCatSorted[0][0] : '—');
 
   document.getElementById('stat-overview').innerHTML =
     '<div class="stat-mini hero"><div class="num">' + App.allQuotes.length + '</div><div class="lbl">Phrases au total</div></div>' +
     '<div class="stat-mini"><div class="num" style="color:#4ade80">' + uniqAuthors + '</div><div class="lbl">Auteurs</div></div>' +
-    '<div class="stat-mini"><div class="num" style="color:#fbbf24">' + alcoholCount + '</div><div class="lbl">🍺 Alcool</div></div>' +
+    '<div class="stat-mini"><div class="num" style="color:#fbbf24;font-size:13px;line-height:1.2">' + esc(topLocName) + '</div><div class="lbl">Top lieu</div></div>' +
     '<div class="stat-mini"><div class="num" style="color:#f472b6;font-size:13px;line-height:1.2">' + esc(topCatName) + '</div><div class="lbl">Catégorie #1</div></div>';
 
-  // Persons chart — top 10
+  // Persons chart — top 10 (filter n/a)
   const personCounts = {};
-  App.allQuotes.forEach(q => { const n = getCol(q,COL.name)||'?'; personCounts[n] = (personCounts[n]||0)+1; });
+  App.allQuotes.forEach(q => { const n = getCol(q,COL.name); if (isValid(n)) personCounts[n] = (personCounts[n]||0)+1; });
   const personSorted = Object.entries(personCounts).sort((a,b)=>b[1]-a[1]).slice(0,10);
   destroyChart('persons');
   App.charts.persons = new Chart(document.getElementById('chart-persons'), {
@@ -1964,9 +1980,9 @@ async function buildStats() {
     options: chartOpts('Phrases')
   });
 
-  // Main cats — sans contour + pourcentages dans le donut
+  // Main cats — donut with more hover detach
   const catCounts = {};
-  App.allQuotes.forEach(q => { const c = getCol(q,COL.mainCat)||'Autre'; catCounts[c]=(catCounts[c]||0)+1; });
+  App.allQuotes.forEach(q => { const c = getCol(q,COL.mainCat); if (isValid(c)) catCounts[c]=(catCounts[c]||0)+1; });
   const catSorted = Object.entries(catCounts).sort((a,b)=>b[1]-a[1]);
   const catTotal = catSorted.reduce((s,e)=>s+e[1],0);
   destroyChart('cats');
@@ -1998,7 +2014,7 @@ async function buildStats() {
   };
   App.charts.cats = new Chart(document.getElementById('chart-cats'), {
     type: 'doughnut',
-    data: { labels: catSorted.map(e=>e[0]), datasets:[{ data: catSorted.map(e=>e[1]), backgroundColor: catSorted.map(e=>labelColor(e[0])), borderWidth:0, borderColor:'transparent', hoverOffset:6 }]},
+    data: { labels: catSorted.map(e=>e[0]), datasets:[{ data: catSorted.map(e=>e[1]), backgroundColor: catSorted.map(e=>labelColor(e[0])), borderWidth:0, borderColor:'transparent', hoverOffset:18, hoverBorderWidth:2, hoverBorderColor:'#fff' }]},
     options: {
       responsive: true,
       maintainAspectRatio: true,
@@ -2023,23 +2039,36 @@ async function buildStats() {
     options: chartOpts('Phrases')
   });
 
-  // Locations
+  // Locations — in % (filter n/a)
   const locCounts = {};
   App.allQuotes.forEach(q => {
-    const l = getCol(q,COL.location)||'?';
-    if (!/no data/i.test(l)) locCounts[l]=(locCounts[l]||0)+1;
+    const l = getCol(q,COL.location);
+    if (isValid(l)) locCounts[l]=(locCounts[l]||0)+1;
   });
+  const locTotal = Object.values(locCounts).reduce((s,v)=>s+v,0);
   const locSorted = Object.entries(locCounts).sort((a,b)=>b[1]-a[1]).slice(0,7);
+  const locPcts = locSorted.map(e => Math.round(e[1] / locTotal * 100));
   destroyChart('locations');
   App.charts.locations = new Chart(document.getElementById('chart-locations'), {
     type: 'bar',
-    data: { labels: locSorted.map(e=>e[0]), datasets:[{ data:locSorted.map(e=>e[1]), backgroundColor: locSorted.map(e=>labelColor(e[0])), borderRadius:8, borderSkipped:false }]},
-    options: { ...chartOpts('Phrases'), indexAxis:'y' }
+    data: { labels: locSorted.map(e=>e[0]), datasets:[{ data: locPcts, backgroundColor: locSorted.map(e=>labelColor(e[0])), borderRadius:8, borderSkipped:false }]},
+    options: {
+      ...chartOpts('%'),
+      indexAxis:'y',
+      scales: {
+        ...chartOpts('%').scales,
+        x: { ...chartOpts('%').scales.x, ticks: { ...chartOpts('%').scales.x.ticks, callback: v => v + '%' }, max: 100 }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => ' ' + ctx.raw + '% (' + locSorted[ctx.dataIndex][1] + ' phrases)' } }
+      }
+    }
   });
 
-  // Volumes
+  // Volumes (filter n/a)
   const volCounts = {};
-  App.allQuotes.forEach(q => { const v = getCol(q,COL.volume); if(v) volCounts[v]=(volCounts[v]||0)+1; });
+  App.allQuotes.forEach(q => { const v = getCol(q,COL.volume); if (isValid(v)) volCounts[v]=(volCounts[v]||0)+1; });
   if (Object.keys(volCounts).length) {
     const volSorted = Object.entries(volCounts).sort((a,b)=>{
       const na = parseInt(a[0])||0, nb = parseInt(b[0])||0;
@@ -2100,23 +2129,44 @@ function closeFilterMenuSmooth() {
   btn.classList.remove('active');
 }
 
-let _filterTapTime = 0;
 function toggleFilterMenu() {
-  const now = Date.now();
-  const hasFilters = activeFilters.authors.length || activeFilters.mainCats.length ||
-    activeFilters.secondCats.length || activeFilters.locations.length ||
-    activeFilters.alcohol.length || activeFilters.volumes.length || activeFilters.search;
-  if (hasFilters && now - _filterTapTime < 400) {
-    // Double tap → reset filters
-    resetFilters();
-    showToast('Filtres supprimés');
-    _filterTapTime = 0;
-    return;
-  }
-  _filterTapTime = now;
   const overlay = document.getElementById('filter-overlay');
   overlay.classList.contains('open') ? closeFilterMenuSmooth() : openFilterMenu();
 }
+
+// Long press (2s) on filter button → reset filters
+(function initFilterLongPress() {
+  let pressTimer = null;
+  let didLongPress = false;
+  const btn = document.getElementById('btn-filter-toggle');
+  if (!btn) return;
+
+  function startPress() {
+    didLongPress = false;
+    pressTimer = setTimeout(() => {
+      didLongPress = true;
+      const hasFilters = activeFilters.authors.length || activeFilters.mainCats.length ||
+        activeFilters.secondCats.length || activeFilters.locations.length ||
+        activeFilters.alcohol.length || activeFilters.volumes.length || activeFilters.search;
+      if (hasFilters) {
+        resetFilters();
+        showToast('Filtres supprimés');
+      }
+    }, 2000);
+  }
+  function endPress() {
+    clearTimeout(pressTimer);
+    if (!didLongPress) toggleFilterMenu();
+  }
+  function cancelPress() { clearTimeout(pressTimer); }
+
+  btn.addEventListener('mousedown', startPress);
+  btn.addEventListener('mouseup', endPress);
+  btn.addEventListener('mouseleave', cancelPress);
+  btn.addEventListener('touchstart', startPress, { passive: true });
+  btn.addEventListener('touchend', (e) => { e.preventDefault(); endPress(); });
+  btn.addEventListener('touchcancel', cancelPress);
+})();
 
 function closeFilterMenu(e) {
   if (e.target === document.getElementById('filter-overlay')) {
