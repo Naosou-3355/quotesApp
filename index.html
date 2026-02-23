@@ -146,6 +146,10 @@
       letter-spacing: 0.5px;
       white-space: nowrap;
     }
+    #fav-count-badge {
+      color: var(--accent);
+      font-weight: 600;
+    }
 
     .icon-btn {
       width: 34px; height: 34px;
@@ -163,22 +167,27 @@
     .icon-btn:active { transform: scale(0.9); border-color: var(--accent); color: var(--accent); }
 
     /* ── SCREENS ── */
-    .screen {
+    .screens-container {
       flex: 1;
+      position: relative;
+      overflow: hidden;
+      min-height: 0;
+    }
+    .screen {
+      display: flex;
+      flex-direction: column;
+      position: absolute;
+      inset: 0;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
       opacity: 0;
       visibility: hidden;
-      position: absolute;
-      inset: 0;
-      transition: opacity 0.25s ease, visibility 0.25s;
-      flex-direction: column;
+      transition: opacity 0.22s ease, visibility 0.22s;
+      will-change: opacity;
     }
     .screen.active {
       opacity: 1;
       visibility: visible;
-      position: relative;
-      display: flex;
       z-index: 1;
     }
 
@@ -513,8 +522,9 @@
     .btn-filter-toggle .filter-label { font-size: 10px; font-weight: 600; letter-spacing: 1px; }
     .btn-filter-toggle.active {
       border-color: var(--accent);
-      color: var(--accent);
-      background: var(--accent-dim);
+      color: #fff;
+      background: rgba(124,106,247,0.25);
+      box-shadow: 0 0 14px rgba(124,106,247,0.3), inset 0 0 10px rgba(124,106,247,0.1);
     }
 
     /* ── FILTER SCREEN ── */
@@ -556,7 +566,27 @@
 
 
     /* ── STATS SCREEN ── */
-    #screen-stats { padding: 18px; gap: 16px; }
+    #screen-stats { padding: 18px; gap: 14px; }
+
+    /* Section separators */
+    .stats-section-label {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 2.5px;
+      font-family: var(--font-mono);
+      padding: 8px 0 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .stats-section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
 
     .stats-card {
       background: var(--surface);
@@ -566,7 +596,7 @@
     }
 
     .stats-card-title {
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 700;
       color: var(--text-dim);
       margin-bottom: 14px;
@@ -576,28 +606,38 @@
     }
     .stats-card-title::before { content: '// '; color: var(--border); }
 
+    /* Overview: hero stat full width + 3 cols */
     .stat-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1fr 1fr 1fr;
       gap: 10px;
     }
 
     .stat-mini {
-      background: var(--surface);
+      background: rgba(0,0,0,0.2);
       border: 1px solid var(--border);
       border-radius: var(--radius-sm);
-      padding: 14px 12px;
+      padding: 14px 10px;
       text-align: center;
     }
+    .stat-mini.hero {
+      grid-column: 1 / -1;
+      padding: 18px 14px;
+      background: rgba(124,106,247,0.06);
+      border-color: rgba(124,106,247,0.2);
+    }
+    .stat-mini.hero .num {
+      font-size: 36px;
+    }
     .stat-mini .num {
-      font-size: 26px;
+      font-size: 22px;
       font-weight: 700;
       color: var(--accent);
       font-family: var(--font-mono);
       line-height: 1;
     }
     .stat-mini .lbl {
-      font-size: 11px;
+      font-size: 10px;
       color: var(--text-dim);
       margin-top: 5px;
       letter-spacing: 1px;
@@ -605,7 +645,11 @@
       font-family: var(--font-mono);
     }
 
+    /* Per-chart type heights */
     canvas.chart-canvas { max-height: 220px; }
+    #chart-cats { max-height: 260px; }
+    #chart-hours { max-height: 180px; }
+    #chart-locations { max-height: 240px; }
 
 
     /* ── HISTORY SCREEN ── */
@@ -741,7 +785,7 @@
       justify-content: center;
       opacity: 0;
       pointer-events: none;
-      transition: opacity 0.35s ease;
+      transition: opacity 0.45s ease;
     }
     .sheet-overlay.open {
       opacity: 1;
@@ -758,7 +802,7 @@
       border-radius: 18px 18px 0 0;
       padding: 18px 18px calc(var(--safe-bottom) + 22px);
       transform: translateY(100%);
-      transition: transform 0.38s cubic-bezier(0.32, 0.72, 0, 1);
+      transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1);
       will-change: transform;
       max-height: 65vh;
       display: flex;
@@ -871,26 +915,26 @@
     /* ── TOAST ── */
     .toast {
       position: fixed;
-      top: calc(var(--safe-top) + 72px); /* sous le header, au niveau du coin haut-gauche */
+      top: calc(var(--safe-top) + 62px);
       left: 50%;
-      transform: translateX(-50%) translateY(-8px);
-      background: var(--surface);
-      border: 1px solid var(--border);
-      color: var(--accent);
+      transform: translateX(-50%) translateY(-10px);
+      background: #1e2140;
+      border: 1px solid var(--accent);
+      color: var(--text);
       padding: 9px 18px;
-      border-radius: var(--radius-sm);
+      border-radius: var(--radius);
       font-size: 11px;
       font-family: var(--font-mono);
       font-weight: 500;
       letter-spacing: 0.5px;
       opacity: 0;
-      transition: all 0.22s;
+      transition: opacity 0.25s ease, transform 0.25s ease;
       pointer-events: none;
       white-space: nowrap;
       z-index: 200;
-      box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.45), 0 0 10px var(--accent-dim);
     }
-    .toast::before { content: '> '; color: #ffffff; }
+    .toast::before { content: '> '; color: var(--accent); font-weight: 700; }
     .toast.show {
       opacity: 1;
       transform: translateX(-50%) translateY(0);
@@ -902,8 +946,8 @@
     ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
     /* ── No data overlay ── */
-    #no-data-screen { display: none; }
-    #no-data-screen.active { display: flex; opacity: 1; visibility: visible; position: relative; }
+    #no-data-screen { z-index: 2; }
+    #no-data-screen:not(.active) { pointer-events: none; }
 
     /* ── ANIMATIONS ── */
     @keyframes glitch {
@@ -928,7 +972,7 @@
       justify-content: center;
       opacity: 0;
       pointer-events: none;
-      transition: opacity 0.35s ease;
+      transition: opacity 0.45s ease;
     }
     .filter-overlay.open {
       opacity: 1;
@@ -947,7 +991,7 @@
       flex-direction: column;
       height: 65vh;
       transform: translateY(100%);
-      transition: transform 0.38s cubic-bezier(0.32, 0.72, 0, 1);
+      transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1);
       will-change: transform;
       touch-action: none;
     }
@@ -1077,12 +1121,14 @@
   <header class="header">
     <span class="app-name" id="app-title">our quotes</span>
     <div class="header-actions">
-      <button class="btn-fav-header" id="btn-fav-header" onclick="openHistorySheet()" title="Mes favoris">
-        <span class="btn-fav-header-label">Mes phrases préfs</span>
+      <button class="btn-fav-header" id="btn-fav-header" onclick="openHistorySheet()" title="Mes favoris" aria-label="Ouvrir les favoris">
+        <span class="btn-fav-header-label">Mes phrases préfs<span id="fav-count-badge"></span></span>
         <span class="btn-fav-header-icon">🤍</span>
       </button>
     </div>
   </header>
+
+  <div class="screens-container">
 
   <!-- SCREEN : DATA LOAD -->
   <div class="screen active" id="no-data-screen">
@@ -1127,11 +1173,11 @@
 
     <!-- Bottom bar -->
     <div class="bottom-bar">
-      <button class="btn-fav" id="btn-fav" onclick="toggleFav()" title="Ajouter aux favoris">
+      <button class="btn-fav" id="btn-fav" onclick="toggleFav()" title="Ajouter aux favoris" aria-label="Ajouter aux favoris">
         <span class="fav-icon">📌</span>
       </button>
-      <button class="btn-random" onclick="showRandom()">Ménestrel, une autre</button>
-      <button class="btn-filter-toggle" id="btn-filter-toggle" onclick="toggleFilterMenu()" title="Filtres">🔍 <span class="filter-label">Filtrer</span></button>
+      <button class="btn-random" onclick="showRandom()" aria-label="Afficher une citation aléatoire">Ménestrel, une autre</button>
+      <button class="btn-filter-toggle" id="btn-filter-toggle" onclick="toggleFilterMenu()" title="Filtres" aria-label="Ouvrir les filtres">🔍 <span class="filter-label">Filtrer</span></button>
     </div>
   </div>
 
@@ -1142,6 +1188,9 @@
       <div class="stats-card-title">overview</div>
       <div class="stat-grid" id="stat-overview"></div>
     </div>
+
+    <div class="stats-section-label">répartition</div>
+
     <div class="stats-card">
       <div class="stats-card-title">phrases par personne</div>
       <canvas class="chart-canvas" id="chart-persons"></canvas>
@@ -1150,6 +1199,9 @@
       <div class="stats-card-title">catégories</div>
       <canvas class="chart-canvas" id="chart-cats"></canvas>
     </div>
+
+    <div class="stats-section-label">activité</div>
+
     <div class="stats-card">
       <div class="stats-card-title">activité par heure</div>
       <canvas class="chart-canvas" id="chart-hours"></canvas>
@@ -1173,15 +1225,17 @@
     <div id="history-list" style="padding:18px;display:flex;flex-direction:column;gap:10px;"></div>
   </div>
 
+  </div><!-- /.screens-container -->
+
   <!-- BOTTOM NAV -->
   <nav class="bottom-nav" id="bottom-nav">
-    <button class="nav-btn active" onclick="navigate('quote')" id="nav-quote">
+    <button class="nav-btn active" onclick="navigate('quote')" id="nav-quote" aria-label="Phrases aléatoires">
       <span class="nav-icon">🎲</span>phrases
     </button>
-    <button class="nav-btn" onclick="navigate('stats')" id="nav-stats">
+    <button class="nav-btn" onclick="navigate('stats')" id="nav-stats" aria-label="Statistiques">
       <span class="nav-icon">📊</span>stats
     </button>
-    <button class="nav-btn" onclick="navigate('history')" id="nav-history">
+    <button class="nav-btn" onclick="navigate('history')" id="nav-history" aria-label="Historique de session">
       <span class="nav-icon">💾</span>log
     </button>
   </nav>
@@ -1190,17 +1244,17 @@
 
 
 <!-- FILTER MENU OVERLAY -->
-<div class="filter-overlay" id="filter-overlay" onclick="closeFilterMenu(event)">
+<div class="filter-overlay" id="filter-overlay" onclick="closeFilterMenu(event)" role="dialog" aria-label="Panneau de filtres">
   <div class="filter-menu" id="filter-menu">
     <div class="sheet-handle"></div>
     <div class="filter-menu-header">
       <div class="filter-count-txt" id="filter-count">— phrases</div>
-      <button class="filter-reset" onclick="resetFilters()">🧹 Supprimer les filtres</button>
+      <button class="filter-reset" onclick="resetFilters()" aria-label="Supprimer tous les filtres">🧹 Supprimer les filtres</button>
     </div>
     <div class="filter-menu-body">
       <div class="filter-section">
         <div class="filter-title">Recherche</div>
-        <input class="filter-input" type="search" placeholder="Rechercher par mot clé" id="search-input" oninput="applyFilters()" />
+        <input class="filter-input" type="search" placeholder="Rechercher par mot clé" id="search-input" oninput="applyFilters()" aria-label="Rechercher dans les citations" />
       </div>
       <div class="filter-cat-section">
         <button class="filter-cat-toggle" onclick="toggleFilterCat('authors')">
@@ -1243,7 +1297,7 @@
 </div>
 
 <!-- FAVORITES SHEET -->
-<div class="sheet-overlay" id="history-sheet" onclick="closeHistorySheet(event)">
+<div class="sheet-overlay" id="history-sheet" onclick="closeHistorySheet(event)" role="dialog" aria-label="Favoris">
   <div class="sheet">
     <div class="sheet-handle"></div>
     <div class="sheet-title">favoris</div>
@@ -1270,6 +1324,7 @@ const App = {
   shuffleQueue: [],
   chartJsLoaded: false,
   toastTimer: null,
+  statsDirty: true,
 };
 
 // Shorthand aliases for readability in hot paths
@@ -1320,12 +1375,27 @@ function getCol(row, keys) {
 function parseDate(str) {
   if (!str) return null;
   str = String(str).trim();
+  let m;
   // DD/MM/YYYY HH:MM:SS or DD/MM/YYYY HH:MM
-  let m = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})[\s,T](\d{2}):(\d{2})/);
+  m = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})[\s,T](\d{2}):(\d{2})/);
   if (m) return new Date(+m[3], +m[2]-1, +m[1], +m[4], +m[5]);
-  // ISO
+  // DD/MM/YYYY (no time)
+  m = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (m) return new Date(+m[3], +m[2]-1, +m[1]);
+  // DD-MM-YYYY or DD.MM.YYYY with optional time
+  m = str.match(/^(\d{1,2})[-.](\d{1,2})[-.](\d{4})(?:[\s,T](\d{2}):(\d{2}))?/);
+  if (m) return new Date(+m[3], +m[2]-1, +m[1], +(m[4]||0), +(m[5]||0));
+  // YYYY-MM-DD (ISO short) with optional time
+  m = str.match(/^(\d{4})-(\d{1,2})-(\d{1,2})(?:[\s,T](\d{2}):(\d{2}))?/);
+  if (m) return new Date(+m[1], +m[2]-1, +m[3], +(m[4]||0), +(m[5]||0));
+  // Google Sheets timestamp (number of days since 1899-12-30)
+  if (/^\d{5}(\.\d+)?$/.test(str)) {
+    const epoch = new Date(1899, 11, 30);
+    return new Date(epoch.getTime() + parseFloat(str) * 86400000);
+  }
+  // Fallback: native Date parser
   const d = new Date(str);
-  return isNaN(d) ? null : d;
+  return isNaN(d.getTime()) ? null : d;
 }
 
 function formatDate(str) {
@@ -1379,6 +1449,7 @@ function initData(data) {
   buildFilters();
   buildQueue();
   showRandom();
+  updateFavCount();
   showToast(`${App.allQuotes.length} phrases chargées`);
 }
 
@@ -1593,12 +1664,18 @@ function updateFavBtn() {
   btn.classList.toggle('active', isFav);
   const icon = btn.querySelector('.fav-icon');
   if (icon) icon.textContent = isFav ? '♥️' : '📌';
-  // Bouton header : affiche ♥️ si au moins 1 favori
+  // Bouton header : affiche ♥️ si au moins 1 favori + compteur
   const btnHeader = document.getElementById('btn-fav-header');
   if (btnHeader) {
     const hIcon = btnHeader.querySelector('.btn-fav-header-icon');
     if (hIcon) hIcon.textContent = App.favorites.length > 0 ? '♥️' : '🤍';
   }
+  updateFavCount();
+}
+
+function updateFavCount() {
+  const badge = document.getElementById('fav-count-badge');
+  if (badge) badge.textContent = App.favorites.length > 0 ? ' (' + App.favorites.length + ')' : '';
 }
 
 function openHistorySheet() {
@@ -1708,7 +1785,7 @@ function renderHistory() {
     const catHtml = cat ? ` <span class="history-cat-badge">${esc(cat)}</span>` : '';
 
     item.innerHTML =
-      '<button class="history-fav-btn' + (isFav ? ' active' : '') + '" title="Favori"><span class="fav-icon">' + (isFav ? '♥️' : '📌') + '</span></button>' +
+      '<button class="history-fav-btn' + (isFav ? ' active' : '') + '" title="Favori" aria-label="Ajouter aux favoris"><span class="fav-icon">' + (isFav ? '♥️' : '📌') + '</span></button>' +
       '<div class="history-item-body">' +
         '<div class="history-quote">' + esc(quoteKey) + '</div>' +
         '<div class="history-author"><span class="history-author-arrow">></span>' + esc(name) + ' · ' + esc(loc) + catHtml + '</div>' +
@@ -1781,6 +1858,7 @@ function applyFilters() {
   updateFilterCount();
   updateFilterBtnState();
   refreshFilterCatStates();
+  App.statsDirty = true;
 }
 
 function resetFilters() {
@@ -1804,12 +1882,26 @@ function resetFilters() {
   updateFilterCount();
   updateFilterBtnState();
   localStorage.removeItem('qapp_filters');
+  App.statsDirty = true;
 }
 
 // ═══════════════════════════════════════════════
 //  STATS
 // ═══════════════════════════════════════════════
-const CHART_COLORS = ['#7c6af7','#4ade80','#f472b6','#22d3ee','#fbbf24','#a78bfa','#34d399','#fb7185'];
+const CHART_PALETTE = [
+  '#7c6af7','#4ade80','#f472b6','#22d3ee','#fbbf24',
+  '#a78bfa','#34d399','#fb7185','#60a5fa','#facc15',
+  '#c084fc','#2dd4bf','#f87171','#38bdf8','#a3e635'
+];
+// Deterministic color for a label — same label always gets same color
+const _colorCache = {};
+function labelColor(label) {
+  if (_colorCache[label]) return _colorCache[label];
+  let hash = 0;
+  for (let i = 0; i < label.length; i++) hash = ((hash << 5) - hash + label.charCodeAt(i)) | 0;
+  _colorCache[label] = CHART_PALETTE[Math.abs(hash) % CHART_PALETTE.length];
+  return _colorCache[label];
+}
 
 function destroyChart(id) {
   if (App.charts[id]) { App.charts[id].destroy(); delete App.charts[id]; }
@@ -1829,6 +1921,10 @@ async function loadChartJS() {
 
 async function buildStats() {
   if (!App.allQuotes.length) return;
+  if (!App.statsDirty) return; // skip if nothing changed
+
+  const statsEl = document.getElementById('screen-stats');
+  statsEl.style.opacity = '0';
 
   // Lazy-load Chart.js on first Stats visit
   if (!App.chartJsLoaded) {
@@ -1837,6 +1933,7 @@ async function buildStats() {
     } catch (e) {
       console.warn(e);
       showToast('Impossible de charger les graphiques');
+      statsEl.style.opacity = '';
       return;
     }
   }
@@ -1851,10 +1948,10 @@ async function buildStats() {
   const topCatName = overviewCatSorted.length >= 2 ? overviewCatSorted[1][0] : (overviewCatSorted[0] ? overviewCatSorted[0][0] : '—');
 
   document.getElementById('stat-overview').innerHTML =
-    '<div class="stat-mini"><div class="num">' + App.allQuotes.length + '</div><div class="lbl">Phrases</div></div>' +
-    '<div class="stat-mini"><div class="num">' + uniqAuthors + '</div><div class="lbl">Auteurs</div></div>' +
-    '<div class="stat-mini"><div class="num">' + alcoholCount + '</div><div class="lbl">Avec alcool</div></div>' +
-    '<div class="stat-mini"><div class="num" style="font-size:14px;line-height:1.2">' + esc(topCatName) + '</div><div class="lbl">Catégorie #1</div></div>';
+    '<div class="stat-mini hero"><div class="num">' + App.allQuotes.length + '</div><div class="lbl">Phrases au total</div></div>' +
+    '<div class="stat-mini"><div class="num" style="color:#4ade80">' + uniqAuthors + '</div><div class="lbl">Auteurs</div></div>' +
+    '<div class="stat-mini"><div class="num" style="color:#fbbf24">' + alcoholCount + '</div><div class="lbl">🍺 Alcool</div></div>' +
+    '<div class="stat-mini"><div class="num" style="color:#f472b6;font-size:13px;line-height:1.2">' + esc(topCatName) + '</div><div class="lbl">Catégorie #1</div></div>';
 
   // Persons chart — top 10
   const personCounts = {};
@@ -1863,7 +1960,7 @@ async function buildStats() {
   destroyChart('persons');
   App.charts.persons = new Chart(document.getElementById('chart-persons'), {
     type: 'bar',
-    data: { labels: personSorted.map(e=>e[0]), datasets:[{ data: personSorted.map(e=>e[1]), backgroundColor: CHART_COLORS, borderRadius:8, borderSkipped:false }]},
+    data: { labels: personSorted.map(e=>e[0]), datasets:[{ data: personSorted.map(e=>e[1]), backgroundColor: personSorted.map(e=>labelColor(e[0])), borderRadius:8, borderSkipped:false }]},
     options: chartOpts('Phrases')
   });
 
@@ -1901,12 +1998,12 @@ async function buildStats() {
   };
   App.charts.cats = new Chart(document.getElementById('chart-cats'), {
     type: 'doughnut',
-    data: { labels: catSorted.map(e=>e[0]), datasets:[{ data: catSorted.map(e=>e[1]), backgroundColor: CHART_COLORS, borderWidth:0, borderColor:'transparent', hoverOffset:6 }]},
+    data: { labels: catSorted.map(e=>e[0]), datasets:[{ data: catSorted.map(e=>e[1]), backgroundColor: catSorted.map(e=>labelColor(e[0])), borderWidth:0, borderColor:'transparent', hoverOffset:6 }]},
     options: {
       responsive: true,
       maintainAspectRatio: true,
       plugins: {
-        legend: { position:'right', labels:{ font:{family:'JetBrains Mono',size:10}, color:'#8b8fac', boxWidth:10, padding:10 }},
+        legend: { position:'bottom', labels:{ font:{family:'JetBrains Mono',size:10}, color:'#8b8fac', boxWidth:10, padding:12 }},
         tooltip: { callbacks: { label: function(ctx) {
           const pct = Math.round(ctx.raw / catTotal * 100);
           return ' ' + ctx.label + ': ' + ctx.raw + ' (' + pct + '%)';
@@ -1936,7 +2033,7 @@ async function buildStats() {
   destroyChart('locations');
   App.charts.locations = new Chart(document.getElementById('chart-locations'), {
     type: 'bar',
-    data: { labels: locSorted.map(e=>e[0]), datasets:[{ data:locSorted.map(e=>e[1]), backgroundColor: CHART_COLORS, borderRadius:8, borderSkipped:false }]},
+    data: { labels: locSorted.map(e=>e[0]), datasets:[{ data:locSorted.map(e=>e[1]), backgroundColor: locSorted.map(e=>labelColor(e[0])), borderRadius:8, borderSkipped:false }]},
     options: { ...chartOpts('Phrases'), indexAxis:'y' }
   });
 
@@ -1951,10 +2048,18 @@ async function buildStats() {
     destroyChart('volumes');
     App.charts.volumes = new Chart(document.getElementById('chart-volumes'), {
       type: 'bar',
-      data: { labels: volSorted.map(e=>e[0]), datasets:[{ data:volSorted.map(e=>e[1]), backgroundColor: CHART_COLORS, borderRadius:8, borderSkipped:false }]},
+      data: { labels: volSorted.map(e=>e[0]), datasets:[{ data:volSorted.map(e=>e[1]), backgroundColor: volSorted.map(e=>labelColor(e[0])), borderRadius:8, borderSkipped:false }]},
       options: chartOpts('Phrases')
     });
   }
+
+  App.statsDirty = false;
+  // Fade in after build
+  requestAnimationFrame(() => {
+    statsEl.style.transition = 'opacity 0.3s ease';
+    statsEl.style.opacity = '';
+    setTimeout(() => { statsEl.style.transition = ''; }, 350);
+  });
 
 }
 
@@ -1967,8 +2072,8 @@ function chartOpts(yLabel) {
       tooltip: { callbacks: { label: ctx => ` ${ctx.raw} phrase${ctx.raw > 1 ? 's' : ''}` } }
     },
     scales: {
-      x: { grid: { color:'rgba(255,255,255,0.04)' }, ticks: { font:{family:'JetBrains Mono',size:10}, color:'#4a4f6a' } },
-      y: { grid: { color:'rgba(255,255,255,0.04)' }, ticks: { font:{family:'JetBrains Mono',size:10}, color:'#4a4f6a' } }
+      x: { grid: { color:'rgba(255,255,255,0.04)' }, ticks: { font:{family:'JetBrains Mono',size:10}, color:'#6b70a0' } },
+      y: { grid: { color:'rgba(255,255,255,0.04)' }, ticks: { font:{family:'JetBrains Mono',size:10}, color:'#6b70a0' } }
     }
   };
 }
@@ -1995,7 +2100,20 @@ function closeFilterMenuSmooth() {
   btn.classList.remove('active');
 }
 
+let _filterTapTime = 0;
 function toggleFilterMenu() {
+  const now = Date.now();
+  const hasFilters = activeFilters.authors.length || activeFilters.mainCats.length ||
+    activeFilters.secondCats.length || activeFilters.locations.length ||
+    activeFilters.alcohol.length || activeFilters.volumes.length || activeFilters.search;
+  if (hasFilters && now - _filterTapTime < 400) {
+    // Double tap → reset filters
+    resetFilters();
+    showToast('Filtres supprimés');
+    _filterTapTime = 0;
+    return;
+  }
+  _filterTapTime = now;
   const overlay = document.getElementById('filter-overlay');
   overlay.classList.contains('open') ? closeFilterMenuSmooth() : openFilterMenu();
 }
@@ -2142,13 +2260,17 @@ function syncFilterChips() {
 }
 
 function updateFilterBtnState() {
-  const hasFilter = activeFilters.authors.length || activeFilters.mainCats.length ||
-    activeFilters.secondCats.length || activeFilters.locations.length ||
-    activeFilters.alcohol.length || activeFilters.volumes.length || activeFilters.search;
+  const n = activeFilters.authors.length + activeFilters.mainCats.length +
+    activeFilters.secondCats.length + activeFilters.locations.length +
+    activeFilters.alcohol.length + activeFilters.volumes.length + (activeFilters.search ? 1 : 0);
   const btn = document.getElementById('btn-filter-toggle');
-  if (btn) btn.classList.toggle('active', !!hasFilter);
+  if (btn) {
+    btn.classList.toggle('active', n > 0);
+    const lbl = btn.querySelector('.filter-label');
+    if (lbl) lbl.textContent = n > 0 ? n + ' Filtre' + (n > 1 ? 's' : '') : 'Filtrer';
+  }
   const rst = document.querySelector('.filter-reset');
-  if (rst) rst.classList.toggle('has-filters', !!hasFilter);
+  if (rst) rst.classList.toggle('has-filters', n > 0);
 }
 
 // ═══════════════════════════════════════════════
@@ -2160,7 +2282,7 @@ function showToast(msg) {
   t.textContent = msg;
   t.classList.add('show');
   clearTimeout(App.toastTimer);
-  App.toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+  App.toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
 }
 
 // ═══════════════════════════════════════════════
