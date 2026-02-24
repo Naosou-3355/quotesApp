@@ -521,15 +521,43 @@
     .btn-fav.active { border-color: #f472b644; background: #f472b611; color: #f472b6; }
     .btn-filter-toggle .filter-label { font-size: 10px; font-weight: 600; letter-spacing: 1px; }
     .btn-filter-toggle.active {
-      border-color: var(--accent);
-      color: #fff;
-      background: rgba(124,106,247,0.25);
-      box-shadow: 0 0 14px rgba(124,106,247,0.3), inset 0 0 10px rgba(124,106,247,0.1);
-      animation: filterPulse 2s ease-in-out infinite;
+      color: var(--accent);
+      background: transparent;
+      border: none;
+      position: relative;
+      z-index: 0;
+      overflow: hidden;
     }
-    @keyframes filterPulse {
-      0%, 100% { box-shadow: 0 0 14px rgba(124,106,247,0.3), inset 0 0 10px rgba(124,106,247,0.1); }
-      50%      { box-shadow: 0 0 20px rgba(124,106,247,0.5), inset 0 0 14px rgba(124,106,247,0.15); }
+    .btn-filter-toggle.active::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 200%;
+      height: 200%;
+      margin-left: -100%;
+      margin-top: -100%;
+      background: conic-gradient(
+        transparent 0%,
+        var(--accent) 20%,
+        #4ade80 40%,
+        var(--accent) 60%,
+        transparent 80%
+      );
+      z-index: -2;
+      animation: glowSpin 2.5s linear infinite;
+    }
+    .btn-filter-toggle.active::after {
+      content: '';
+      position: absolute;
+      inset: 2px;
+      border-radius: calc(var(--radius) - 2px);
+      background: var(--surface);
+      z-index: -1;
+    }
+    @keyframes glowSpin {
+      0%   { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
 
     /* ── FILTER SCREEN ── */
@@ -549,23 +577,45 @@
 
     .filter-chips { display: flex; flex-wrap: wrap; gap: 6px; }
 
+    .filter-search-wrap {
+      position: relative;
+      width: 100%;
+    }
+    .filter-search-wrap::before {
+      content: '🔍';
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 13px;
+      opacity: 0.5;
+      pointer-events: none;
+    }
     .filter-input {
       width: 100%;
-      padding: 11px 14px;
-      border-radius: var(--radius-sm);
+      padding: 12px 14px 12px 38px;
+      border-radius: 24px;
       border: 1px solid var(--border);
       font-family: var(--font-mono);
-      font-size: 13px;
+      font-size: 12px;
       color: var(--text);
-      background: var(--surface);
+      background: rgba(0,0,0,0.25);
       outline: none;
       transition: border-color 0.15s, box-shadow 0.15s;
       caret-color: var(--accent);
     }
-    .filter-input::placeholder { color: var(--text-dim); }
+    .filter-input::placeholder { color: var(--text-dim); font-size: 11px; }
     .filter-input:focus {
       border-color: var(--accent);
       box-shadow: 0 0 0 2px var(--accent-dim);
+      background: rgba(0,0,0,0.35);
+    }
+
+    .filter-separator {
+      height: 1px;
+      background: var(--border);
+      margin: 4px 0;
+      flex-shrink: 0;
     }
 
 
@@ -624,6 +674,10 @@
       border-radius: var(--radius-sm);
       padding: 14px 10px;
       text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
     }
     .stat-mini.hero {
       grid-column: 1 / -1;
@@ -639,7 +693,8 @@
       font-weight: 700;
       color: var(--accent);
       font-family: var(--font-mono);
-      line-height: 1;
+      line-height: 1.2;
+      word-break: break-word;
     }
     .stat-mini .lbl {
       font-size: 10px;
@@ -652,7 +707,7 @@
 
     /* Per-chart type heights */
     canvas.chart-canvas { max-height: 220px; }
-    #chart-cats { max-height: 260px; }
+    #chart-cats { max-height: 350px; margin-bottom: 28px; }
     #chart-hours { max-height: 180px; }
     #chart-locations { max-height: 240px; }
 
@@ -1049,7 +1104,7 @@
       padding: 10px 14px calc(var(--safe-bottom) + 24px);
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 10px;
       /* On laisse les enfants définir leur propre hauteur — pas de overflow:hidden sur eux */
     }
 
@@ -1057,8 +1112,8 @@
     .filter-cat-section {
       border: 1px solid var(--border);
       border-radius: var(--radius-sm);
-      /* PAS de overflow:hidden — sinon le contenu ouvert est coupé */
       flex-shrink: 0;
+      contain: layout style;
     }
 
     .filter-cat-toggle {
@@ -1091,11 +1146,11 @@
     }
     .filter-cat-toggle.open .filter-cat-arrow { transform: rotate(90deg); }
 
-    /* Contenu pliable — display:none → flex quand .open */
+    /* Contenu pliable — grid-template-rows for smooth height animation */
     .filter-collapsible {
       display: grid;
       grid-template-rows: 0fr;
-      transition: grid-template-rows 0.28s ease;
+      transition: grid-template-rows 0.2s ease-out;
     }
     .filter-collapsible > .filter-chips-inner {
       overflow: hidden;
@@ -1106,6 +1161,7 @@
       background: var(--surface);
       border-top: 1px solid transparent;
       border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+      will-change: contents;
     }
     .filter-collapsible.open {
       grid-template-rows: 1fr;
@@ -1212,7 +1268,7 @@
       <canvas class="chart-canvas" id="chart-hours"></canvas>
     </div>
     <div class="stats-card">
-      <div class="stats-card-title">top lieux</div>
+      <div class="stats-card-title">top lieux (hors Paris)</div>
       <canvas class="chart-canvas" id="chart-locations"></canvas>
     </div>
     <div class="stats-card">
@@ -1257,10 +1313,10 @@
       <button class="filter-reset" onclick="resetFilters()" aria-label="Supprimer tous les filtres">🧹 Supprimer les filtres</button>
     </div>
     <div class="filter-menu-body">
-      <div class="filter-section">
-        <div class="filter-title">Recherche</div>
-        <input class="filter-input" type="search" placeholder="Rechercher par mot clé" id="search-input" oninput="applyFilters()" aria-label="Rechercher dans les citations" />
+      <div class="filter-search-wrap">
+        <input class="filter-input" type="search" placeholder="Rechercher une citation…" id="search-input" oninput="applyFilters()" aria-label="Rechercher dans les citations" />
       </div>
+      <div class="filter-separator"></div>
       <div class="filter-cat-section">
         <button class="filter-cat-toggle" onclick="toggleFilterCat('authors')">
           <span>👤 Auteur</span><span class="filter-cat-arrow">▸</span>
@@ -1952,11 +2008,11 @@ async function buildStats() {
 
   // Overview
   const uniqAuthors = new Set(App.allQuotes.map(q=>getCol(q,COL.name)).filter(isValid)).size;
-  // Top location
+  // Top location (2nd result — assume 1st is Paris)
   const locFreqOverview = {};
   App.allQuotes.forEach(q => { const l = getCol(q,COL.location); if (isValid(l)) locFreqOverview[l]=(locFreqOverview[l]||0)+1; });
   const topLocSorted = Object.entries(locFreqOverview).sort((a,b)=>b[1]-a[1]);
-  const topLocName = topLocSorted.length ? topLocSorted[0][0] : '—';
+  const topLocName = topLocSorted.length >= 2 ? topLocSorted[1][0] : (topLocSorted[0] ? topLocSorted[0][0] : '—');
   // Catégorie la plus représentée (2ème résultat de mainCat, présenté comme #1)
   const catFreq = {};
   App.allQuotes.forEach(q => { const c = getCol(q,COL.mainCat); if (isValid(c)) catFreq[c]=(catFreq[c]||0)+1; });
@@ -1966,8 +2022,8 @@ async function buildStats() {
   document.getElementById('stat-overview').innerHTML =
     '<div class="stat-mini hero"><div class="num">' + App.allQuotes.length + '</div><div class="lbl">Phrases au total</div></div>' +
     '<div class="stat-mini"><div class="num" style="color:#4ade80">' + uniqAuthors + '</div><div class="lbl">Auteurs</div></div>' +
-    '<div class="stat-mini"><div class="num" style="color:#fbbf24;font-size:13px;line-height:1.2">' + esc(topLocName) + '</div><div class="lbl">Top lieu</div></div>' +
-    '<div class="stat-mini"><div class="num" style="color:#f472b6;font-size:13px;line-height:1.2">' + esc(topCatName) + '</div><div class="lbl">Catégorie #1</div></div>';
+    '<div class="stat-mini"><div class="num" style="color:#fbbf24;font-size:14px">' + esc(topLocName) + '</div><div class="lbl">Top lieu</div></div>' +
+    '<div class="stat-mini"><div class="num" style="color:#f472b6;font-size:14px">' + esc(topCatName) + '</div><div class="lbl">Catégorie #1</div></div>';
 
   // Persons chart — top 10 (filter n/a)
   const personCounts = {};
@@ -2019,7 +2075,7 @@ async function buildStats() {
       responsive: true,
       maintainAspectRatio: true,
       plugins: {
-        legend: { position:'bottom', labels:{ font:{family:'JetBrains Mono',size:10}, color:'#8b8fac', boxWidth:10, padding:12 }},
+        legend: { position:'bottom', labels:{ font:{family:'JetBrains Mono',size:10}, color:'#8b8fac', boxWidth:10, padding:14, usePointStyle:true }, padding: 30 },
         tooltip: { callbacks: { label: function(ctx) {
           const pct = Math.round(ctx.raw / catTotal * 100);
           return ' ' + ctx.label + ': ' + ctx.raw + ' (' + pct + '%)';
@@ -2045,25 +2101,12 @@ async function buildStats() {
     const l = getCol(q,COL.location);
     if (isValid(l)) locCounts[l]=(locCounts[l]||0)+1;
   });
-  const locTotal = Object.values(locCounts).reduce((s,v)=>s+v,0);
-  const locSorted = Object.entries(locCounts).sort((a,b)=>b[1]-a[1]).slice(0,7);
-  const locPcts = locSorted.map(e => Math.round(e[1] / locTotal * 100));
+  const locSorted = Object.entries(locCounts).sort((a,b)=>b[1]-a[1]).slice(1,8); // skip 1st (Paris)
   destroyChart('locations');
   App.charts.locations = new Chart(document.getElementById('chart-locations'), {
     type: 'bar',
-    data: { labels: locSorted.map(e=>e[0]), datasets:[{ data: locPcts, backgroundColor: locSorted.map(e=>labelColor(e[0])), borderRadius:8, borderSkipped:false }]},
-    options: {
-      ...chartOpts('%'),
-      indexAxis:'y',
-      scales: {
-        ...chartOpts('%').scales,
-        x: { ...chartOpts('%').scales.x, ticks: { ...chartOpts('%').scales.x.ticks, callback: v => v + '%' }, max: 100 }
-      },
-      plugins: {
-        legend: { display: false },
-        tooltip: { callbacks: { label: ctx => ' ' + ctx.raw + '% (' + locSorted[ctx.dataIndex][1] + ' phrases)' } }
-      }
-    }
+    data: { labels: locSorted.map(e=>e[0]), datasets:[{ data: locSorted.map(e=>e[1]), backgroundColor: locSorted.map(e=>labelColor(e[0])), borderRadius:8, borderSkipped:false }]},
+    options: { ...chartOpts('Phrases'), indexAxis:'y' }
   });
 
   // Volumes (filter n/a)
