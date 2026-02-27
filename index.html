@@ -521,43 +521,8 @@
     .btn-fav.active { border-color: #f472b644; background: #f472b611; color: #f472b6; }
     .btn-filter-toggle .filter-label { font-size: 10px; font-weight: 600; letter-spacing: 1px; }
     .btn-filter-toggle.active {
+      border-color: var(--accent);
       color: var(--accent);
-      background: transparent;
-      border: none;
-      position: relative;
-      z-index: 0;
-      overflow: hidden;
-    }
-    .btn-filter-toggle.active::before {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 200%;
-      height: 200%;
-      margin-left: -100%;
-      margin-top: -100%;
-      background: conic-gradient(
-        transparent 0%,
-        var(--accent) 20%,
-        #4ade80 40%,
-        var(--accent) 60%,
-        transparent 80%
-      );
-      z-index: -2;
-      animation: glowSpin 2.5s linear infinite;
-    }
-    .btn-filter-toggle.active::after {
-      content: '';
-      position: absolute;
-      inset: 2px;
-      border-radius: calc(var(--radius) - 2px);
-      background: var(--surface);
-      z-index: -1;
-    }
-    @keyframes glowSpin {
-      0%   { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
     }
 
     /* ── FILTER SCREEN ── */
@@ -677,13 +642,14 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
+      justify-content: flex-end;
     }
     .stat-mini.hero {
       grid-column: 1 / -1;
       padding: 18px 14px;
       background: rgba(124,106,247,0.06);
       border-color: rgba(124,106,247,0.2);
+      justify-content: center;
     }
     .stat-mini.hero .num {
       font-size: 36px;
@@ -695,19 +661,24 @@
       font-family: var(--font-mono);
       line-height: 1.2;
       word-break: break-word;
+      flex: 1;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
     }
     .stat-mini .lbl {
       font-size: 10px;
       color: var(--text-dim);
-      margin-top: 5px;
+      margin-top: 6px;
       letter-spacing: 1px;
       text-transform: uppercase;
       font-family: var(--font-mono);
+      flex-shrink: 0;
     }
 
     /* Per-chart type heights */
     canvas.chart-canvas { max-height: 220px; }
-    #chart-cats { max-height: 350px; margin-bottom: 28px; }
+    #chart-cats { max-height: 240px; margin-top: 8px; }
     #chart-hours { max-height: 180px; }
     #chart-locations { max-height: 240px; }
 
@@ -1150,25 +1121,23 @@
     .filter-collapsible {
       display: grid;
       grid-template-rows: 0fr;
-      transition: grid-template-rows 0.2s ease-out;
+      transition: grid-template-rows 0.25s ease-out;
     }
     .filter-collapsible > .filter-chips-inner {
+      min-height: 0;
       overflow: hidden;
       display: flex;
       flex-wrap: wrap;
       gap: 6px;
       padding: 0 12px;
       background: var(--surface);
-      border-top: 1px solid transparent;
       border-radius: 0 0 var(--radius-sm) var(--radius-sm);
-      will-change: contents;
     }
     .filter-collapsible.open {
       grid-template-rows: 1fr;
     }
     .filter-collapsible.open > .filter-chips-inner {
       padding: 10px 12px 12px;
-      border-top-color: var(--border);
     }
 
 
@@ -1238,7 +1207,7 @@
         <span class="fav-icon">📌</span>
       </button>
       <button class="btn-random" onclick="showRandom()" aria-label="Afficher une citation aléatoire">Ménestrel, une autre</button>
-      <button class="btn-filter-toggle" id="btn-filter-toggle" title="Filtres" aria-label="Ouvrir les filtres">🔍 <span class="filter-label">Filtrer</span></button>
+      <button class="btn-filter-toggle" id="btn-filter-toggle" title="Filtres" aria-label="Ouvrir les filtres"><span class="filter-icon">🔍</span> <span class="filter-label">Filtrer</span></button>
     </div>
   </div>
 
@@ -2035,6 +2004,7 @@ async function buildStats() {
     data: { labels: personSorted.map(e=>e[0]), datasets:[{ data: personSorted.map(e=>e[1]), backgroundColor: personSorted.map(e=>labelColor(e[0])), borderRadius:8, borderSkipped:false }]},
     options: chartOpts('Phrases')
   });
+  chartClickFilter(App.charts.persons, 'authors', personSorted.map(e=>e[0]));
 
   // Main cats — donut with more hover detach
   const catCounts = {};
@@ -2073,9 +2043,14 @@ async function buildStats() {
     data: { labels: catSorted.map(e=>e[0]), datasets:[{ data: catSorted.map(e=>e[1]), backgroundColor: catSorted.map(e=>labelColor(e[0])), borderWidth:0, borderColor:'transparent', hoverOffset:18, hoverBorderWidth:2, hoverBorderColor:'#fff' }]},
     options: {
       responsive: true,
-      maintainAspectRatio: true,
+      maintainAspectRatio: false,
+      layout: { padding: { top: 10, bottom: 0 } },
       plugins: {
-        legend: { position:'bottom', labels:{ font:{family:'JetBrains Mono',size:10}, color:'#8b8fac', boxWidth:10, padding:14, usePointStyle:true }, padding: 30 },
+        legend: {
+          position:'bottom',
+          labels:{ font:{family:'JetBrains Mono',size:10}, color:'#8b8fac', boxWidth:10, padding:12, usePointStyle:true },
+          padding: 24
+        },
         tooltip: { callbacks: { label: function(ctx) {
           const pct = Math.round(ctx.raw / catTotal * 100);
           return ' ' + ctx.label + ': ' + ctx.raw + ' (' + pct + '%)';
@@ -2084,6 +2059,7 @@ async function buildStats() {
     },
     plugins: [doughnutPctPlugin]
   });
+  chartClickFilter(App.charts.cats, 'mainCats', catSorted.map(e=>e[0]));
 
   // Hours
   const hourCounts = Array(24).fill(0);
@@ -2108,6 +2084,7 @@ async function buildStats() {
     data: { labels: locSorted.map(e=>e[0]), datasets:[{ data: locSorted.map(e=>e[1]), backgroundColor: locSorted.map(e=>labelColor(e[0])), borderRadius:8, borderSkipped:false }]},
     options: { ...chartOpts('Phrases'), indexAxis:'y' }
   });
+  chartClickFilter(App.charts.locations, 'locations', locSorted.map(e=>e[0]));
 
   // Volumes (filter n/a)
   const volCounts = {};
@@ -2123,6 +2100,7 @@ async function buildStats() {
       data: { labels: volSorted.map(e=>e[0]), datasets:[{ data:volSorted.map(e=>e[1]), backgroundColor: volSorted.map(e=>labelColor(e[0])), borderRadius:8, borderSkipped:false }]},
       options: chartOpts('Phrases')
     });
+    chartClickFilter(App.charts.volumes, 'volumes', volSorted.map(e=>e[0]));
   }
 
   App.statsDirty = false;
@@ -2147,6 +2125,38 @@ function chartOpts(yLabel) {
       x: { grid: { color:'rgba(255,255,255,0.04)' }, ticks: { font:{family:'JetBrains Mono',size:10}, color:'#6b70a0' } },
       y: { grid: { color:'rgba(255,255,255,0.04)' }, ticks: { font:{family:'JetBrains Mono',size:10}, color:'#6b70a0' } }
     }
+  };
+}
+
+// Click on a chart element → filter quotes by that label, navigate to quotes
+function chartClickFilter(chart, filterKey, labels) {
+  chart.canvas.style.cursor = 'pointer';
+  chart.canvas.onclick = (evt) => {
+    const points = chart.getElementsAtEventForMode(evt, 'nearest', { intersect: true }, false);
+    if (!points.length) return;
+    const idx = points[0].index;
+    const label = labels[idx];
+    if (!label) return;
+    // Reset all filters then set just the clicked one
+    resetFilters();
+    activeFilters[filterKey] = [label];
+    applyFilters();
+    // Activate the corresponding chip visually
+    const chipContainer = {
+      authors: 'filter-authors',
+      mainCats: 'filter-main-cats',
+      secondCats: 'filter-second-cats',
+      locations: 'filter-locations',
+      alcohol: 'filter-alcohol',
+      volumes: 'filter-volumes'
+    }[filterKey];
+    if (chipContainer) {
+      const chips = document.querySelectorAll('#' + chipContainer + ' .chip');
+      chips.forEach(c => { if (c.textContent === label) c.classList.add('active'); });
+    }
+    navigate('quote');
+    showRandom();
+    showToast('Filtre : ' + label);
   };
 }
 
