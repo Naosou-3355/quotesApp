@@ -1,18 +1,17 @@
+// Increment this version string each time you update index.html on GitHub
 const CACHE = 'quoteapp-v2';
-const STATIC_ASSETS = [
+const ASSETS = [
   './',
   './index.html',
   './manifest.json',
+  './data.json',
 ];
-
-// data.json is always fetched network-first (no pre-cache)
-// to ensure users get fresh data on updates
 
 self.addEventListener('install', e => {
   e.waitUntil(
-    caches.open(CACHE).then(c => c.addAll(STATIC_ASSETS).catch(() => {}))
+    caches.open(CACHE).then(c => c.addAll(ASSETS).catch(() => {}))
   );
-  self.skipWaiting();
+  // Do NOT call skipWaiting() — let the app show the update banner
 });
 
 self.addEventListener('activate', e => {
@@ -25,31 +24,18 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
-  const url = new URL(e.request.url);
-
-  // data.json → network-first, fallback to cache
-  if (url.pathname.endsWith('data.json')) {
-    e.respondWith(
-      fetch(e.request)
-        .then(res => {
-          const clone = res.clone();
-          caches.open(CACHE).then(c => c.put(e.request, clone));
-          return res;
-        })
-        .catch(() => caches.match(e.request))
-    );
-    return;
-  }
-
-  // Static assets → stale-while-revalidate
   e.respondWith(
-    caches.match(e.request).then(cached => {
-      const fetched = fetch(e.request).then(res => {
+    fetch(e.request)
+      .then(res => {
         const clone = res.clone();
         caches.open(CACHE).then(c => c.put(e.request, clone));
         return res;
-      }).catch(() => cached);
-      return cached || fetched;
-    })
+      })
+      .catch(() => caches.match(e.request))
   );
+});
+
+// Listen for skip message from the app (when user taps "update")
+self.addEventListener('message', e => {
+  if (e.data === 'skipWaiting') self.skipWaiting();
 });

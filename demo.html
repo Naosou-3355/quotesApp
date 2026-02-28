@@ -587,6 +587,61 @@
     /* ── STATS SCREEN ── */
     #screen-stats { padding: 18px; gap: 14px; }
 
+    /* Stats filter banner — bottom only */
+    .stats-banner-bottom {
+      position: fixed;
+      left: 50%;
+      bottom: calc(var(--safe-bottom) + 70px);
+      z-index: 200;
+      background: rgba(13,15,26,0.5);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid #e05575;
+      color: #e05575;
+      padding: 9px 18px;
+      border-radius: var(--radius);
+      font-size: 11px;
+      font-family: var(--font-mono);
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+      box-shadow: 0 0 10px rgba(224,85,117,0.15);
+      pointer-events: none;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transform: translateX(-50%) translateY(20px);
+      opacity: 0;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+    .stats-banner-bottom.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .stats-banner-bottom:active {
+      transform: translateX(-50%) scale(0.95);
+    }
+
+    .chart-empty {
+      text-align: center;
+      padding: 28px 12px;
+      color: var(--text-dim);
+      font-size: 11px;
+      font-family: var(--font-mono);
+      letter-spacing: 0.5px;
+    }
+    .chart-empty::before {
+      content: '◌';
+      display: block;
+      font-size: 22px;
+      margin-bottom: 8px;
+      opacity: 0.35;
+    }
+
+    .stat-grid-2 {
+      grid-template-columns: 1fr 1fr;
+    }
+
     /* Section separators */
     .stats-section-label {
       font-size: 10px;
@@ -684,20 +739,50 @@
 
     /* ── HISTORY SCREEN ── */
     #screen-history { padding: 18px; gap: 10px; }
+    #history-list {
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
 
     .history-item {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius-sm);
-      padding: 12px 12px 12px 14px;
+      padding: 12px 12px 12px 16px;
       cursor: pointer;
-      transition: border-color 0.15s;
+      transition: border-color 0.15s, opacity 0.2s;
       position: relative;
       display: flex;
       align-items: flex-start;
       gap: 10px;
     }
-    .history-item:active { border-color: var(--accent); }
+    /* Hiérarchie visuelle : les plus anciens s'estompent */
+    .history-item[data-rank="0"],
+    .history-item[data-rank="1"],
+    .history-item[data-rank="2"] { opacity: 1; }
+    .history-item[data-rank="3"],
+    .history-item[data-rank="4"],
+    .history-item[data-rank="5"] { opacity: 0.85; }
+    .history-item[data-rank="6"],
+    .history-item[data-rank="7"],
+    .history-item[data-rank="8"],
+    .history-item[data-rank="9"] { opacity: 0.7; }
+    .history-item[data-rank="10"],
+    .history-item[data-rank="11"],
+    .history-item[data-rank="12"],
+    .history-item[data-rank="13"],
+    .history-item[data-rank="14"] { opacity: 0.55; }
+    .history-item[data-rank="15"],
+    .history-item[data-rank="16"],
+    .history-item[data-rank="17"],
+    .history-item[data-rank="18"],
+    .history-item[data-rank="19"] { opacity: 0.42; }
+    /* Premier item — accent border */
+    .history-item[data-rank="0"] { border-color: rgba(124,106,247,0.3); }
+
+    .history-item:active { border-color: var(--accent); opacity: 1; }
     .history-item-body { flex: 1; min-width: 0; }
     .history-quote {
       font-family: var(--font-body);
@@ -707,17 +792,33 @@
       color: var(--text);
       line-height: 1.6;
     }
+    .history-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 6px;
+      gap: 6px;
+    }
     .history-author {
       font-size: 12px;
       color: var(--text-dim);
-      margin-top: 6px;
       font-family: var(--font-mono);
       display: flex;
       align-items: center;
       flex-wrap: wrap;
       gap: 4px;
+      flex: 1;
+      min-width: 0;
     }
-    .history-author-arrow { color: #ffffff; margin-right: 2px; }
+    .history-author-arrow { color: var(--accent); margin-right: 2px; }
+    .history-time {
+      font-size: 10px;
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+      opacity: 0.6;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
     .history-cat-badge {
       display: inline-block;
       padding: 1px 6px;
@@ -729,6 +830,7 @@
       font-style: normal;
       white-space: nowrap;
     }
+    /* Fav button — à droite (body first, then fav) */
     .history-fav-btn {
       flex-shrink: 0;
       width: 36px; height: 36px;
@@ -742,6 +844,7 @@
       font-size: 18px;
       line-height: 1;
       align-self: center;
+      order: 1;
     }
     .history-fav-btn:active { transform: scale(0.9); }
     .history-fav-btn.active { border-color: #f472b644; background: #f472b611; }
@@ -969,6 +1072,119 @@
       opacity: 1;
       transform: translateX(-50%) translateY(0);
     }
+
+    /* ── PWA INSTALL PROMPT — centered overlay, LOG item style ── */
+    .pwa-install-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 210;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.55);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    .pwa-install-overlay.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .pwa-install-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 14px 14px 12px 16px;
+      max-width: 320px;
+      width: calc(100% - 48px);
+      transform: scale(0.92) translateY(10px);
+      transition: transform 0.3s ease;
+    }
+    .pwa-install-overlay.show .pwa-install-card {
+      transform: scale(1) translateY(0);
+    }
+    .pwa-install-card .pwa-quote {
+      font-family: var(--font-body);
+      font-size: 14px;
+      font-style: italic;
+      font-weight: 300;
+      color: var(--text);
+      line-height: 1.6;
+      margin-bottom: 8px;
+    }
+    .pwa-install-card .pwa-author {
+      font-size: 12px;
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+      margin-bottom: 14px;
+    }
+    .pwa-install-card .pwa-author span { color: var(--accent); }
+    .pwa-install-card .pwa-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .pwa-install-card .pwa-dismiss {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      padding: 6px 14px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      letter-spacing: 0.5px;
+      flex-shrink: 0;
+    }
+    .pwa-install-card .pwa-dismiss:active { opacity: 0.7; }
+    .pwa-install-card .pwa-check-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 10px;
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+      cursor: pointer;
+      user-select: none;
+    }
+    .pwa-install-card .pwa-check-label input {
+      accent-color: var(--accent);
+      width: 13px;
+      height: 13px;
+      cursor: pointer;
+    }
+
+    /* ── PWA UPDATE BANNER ── */
+    .pwa-update-banner {
+      position: fixed;
+      top: calc(var(--safe-top) + 62px);
+      left: 50%;
+      transform: translateX(-50%) translateY(-20px);
+      z-index: 210;
+      background: #1e2140;
+      border: 1px solid #4ade80;
+      border-radius: var(--radius);
+      padding: 10px 18px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text);
+      white-space: nowrap;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.45), 0 0 10px rgba(74,222,128,0.2);
+      opacity: 0;
+      pointer-events: none;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+    .pwa-update-banner.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+      pointer-events: auto;
+    }
+    .pwa-update-banner:active { transform: translateX(-50%) scale(0.95); }
 
     /* ── SCROLLBAR ── */
     ::-webkit-scrollbar { width: 3px; }
@@ -1213,35 +1429,45 @@
 
   <!-- SCREEN : STATS -->
   <div class="screen" id="screen-stats">
+    <div class="stats-banner-bottom" id="stats-banner-bottom" onclick="clearStatsFilter()">🧹 Supprimer les filtres</div>
     <div class="stats-card">
       <div class="stats-card-title">overview</div>
       <div class="stat-grid" id="stat-overview"></div>
     </div>
+    <div class="stats-card">
+      <div class="stats-card-title">fun facts</div>
+      <div class="stat-grid stat-grid-2" id="stat-fun"></div>
+    </div>
 
     <div class="stats-section-label">répartition</div>
 
-    <div class="stats-card">
+    <div class="stats-card" id="card-persons">
       <div class="stats-card-title">phrases par personne</div>
       <canvas class="chart-canvas" id="chart-persons"></canvas>
+      <div class="chart-empty" style="display:none"></div>
     </div>
-    <div class="stats-card">
+    <div class="stats-card" id="card-cats">
       <div class="stats-card-title">catégories</div>
       <canvas class="chart-canvas" id="chart-cats"></canvas>
+      <div class="chart-empty" style="display:none"></div>
     </div>
 
     <div class="stats-section-label">activité</div>
 
-    <div class="stats-card">
+    <div class="stats-card" id="card-hours">
       <div class="stats-card-title">activité par heure</div>
       <canvas class="chart-canvas" id="chart-hours"></canvas>
+      <div class="chart-empty" style="display:none"></div>
     </div>
-    <div class="stats-card">
+    <div class="stats-card" id="card-locations">
       <div class="stats-card-title">top lieux (hors Paris)</div>
       <canvas class="chart-canvas" id="chart-locations"></canvas>
+      <div class="chart-empty" style="display:none"></div>
     </div>
-    <div class="stats-card">
+    <div class="stats-card" id="card-volumes">
       <div class="stats-card-title">phrases par volume</div>
       <canvas class="chart-canvas" id="chart-volumes"></canvas>
+      <div class="chart-empty" style="display:none"></div>
     </div>
   </div>
 
@@ -1251,7 +1477,7 @@
       <div class="empty-icon">◌</div>
       <p>// aucun historique<br>tirez des phrases aléatoires<br>pour les voir apparaître ici</p>
     </div>
-    <div id="history-list" style="padding:18px;display:flex;flex-direction:column;gap:10px;"></div>
+    <div id="history-list"></div>
   </div>
 
   </div><!-- /.screens-container -->
@@ -1336,6 +1562,26 @@
 
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
+
+<!-- PWA INSTALL PROMPT -->
+<div class="pwa-install-overlay" id="pwa-install-overlay">
+  <div class="pwa-install-card">
+    <div class="pwa-quote">Pour installer l'application, appuyez sur Partager → Sur l'écran d'accueil</div>
+    <div class="pwa-author"><span>></span> our quotes · installation</div>
+    <div class="pwa-actions">
+      <label class="pwa-check-label">
+        <input type="checkbox" id="pwa-noremind">
+        Ne plus me le rappeler
+      </label>
+      <button class="pwa-dismiss" onclick="dismissInstallBanner()">OK, compris</button>
+    </div>
+  </div>
+</div>
+
+<!-- PWA UPDATE BANNER -->
+<div class="pwa-update-banner" id="pwa-update-banner">
+  🆕 Nouvelle version disponible — appuyez pour mettre à jour
+</div>
 
 <script>
 // ═══════════════════════════════════════════════
@@ -7531,6 +7777,15 @@ function initData(data) {
   App.filteredQuotes = [...App.allQuotes];
   App.dataLoaded = true;
 
+  // Restore history from localStorage — supports {q,ts} and legacy raw arrays
+  try {
+    const saved = JSON.parse(localStorage.getItem('qapp_history') || '[]');
+    App.sessionHistory = saved.slice(0, 20).map(entry => {
+      if (entry && entry.q) return entry; // new format
+      return { q: entry, ts: 0 }; // legacy: raw quote row, no timestamp
+    });
+  } catch(e) { App.sessionHistory = []; }
+
   document.getElementById('no-data-screen').classList.remove('active');
   document.getElementById('bottom-nav').style.display = '';
   navigate('quote');
@@ -7556,6 +7811,12 @@ function navigate(screen) {
   document.getElementById('screen-' + screen).classList.add('active');
   const navBtn = document.getElementById('nav-' + screen);
   if (navBtn) navBtn.classList.add('active');
+
+  // Show/hide stats banner depending on active screen
+  const bannerBottom = document.getElementById('stats-banner-bottom');
+  if (screen !== 'stats') {
+    bannerBottom.classList.remove('show');
+  }
 
   if (screen === 'stats') buildStats();
   if (screen === 'history') renderHistory();
@@ -7637,9 +7898,10 @@ function displayQuote(q) {
     applyContent();
   }
 
-  // Add to history
-  App.sessionHistory.unshift(q);
-  if (App.sessionHistory.length > 50) App.sessionHistory.pop();
+  // Add to history (limit 20, persist with timestamp)
+  App.sessionHistory.unshift({ q: q, ts: Date.now() });
+  if (App.sessionHistory.length > 20) App.sessionHistory.length = 20;
+  localStorage.setItem('qapp_history', JSON.stringify(App.sessionHistory));
 
   // Fav state
   updateFavBtn();
@@ -7729,7 +7991,7 @@ function setFavorite(q) {
   }
   localStorage.setItem('qapp_favs', JSON.stringify(App.favorites));
   updateFavBtn();
-  showToast(added ? '♥️ Ajouté aux favoris' : 'Retiré des favoris');
+  showToast(added ? '♥️ Ajouté aux favoris' : '💔 Retiré des favoris');
   return added;
 }
 
@@ -7856,42 +8118,71 @@ function closeHistorySheet(e) {
 function renderHistory() {
   const list = document.getElementById('history-list');
   const empty = document.getElementById('history-empty');
-  list.innerHTML = '';
-  if (!App.sessionHistory.length) { empty.style.display = 'flex'; return; }
-  empty.style.display = 'none';
-  App.sessionHistory.forEach(q => {
-    const item = document.createElement('div');
-    item.className = 'history-item';
 
+  if (!App.sessionHistory.length) {
+    list.innerHTML = '';
+    empty.style.display = 'flex';
+    return;
+  }
+  empty.style.display = 'none';
+
+  function timeAgo(ts) {
+    if (!ts) return '';
+    const diff = Math.floor((Date.now() - ts) / 1000);
+    if (diff < 60) return 'à l\'instant';
+    if (diff < 3600) return Math.floor(diff / 60) + ' min';
+    if (diff < 86400) return Math.floor(diff / 3600) + ' h';
+    return Math.floor(diff / 86400) + ' j';
+  }
+
+  const html = App.sessionHistory.map((entry, idx) => {
+    const q = entry.q;
     const quoteKey = getCol(q, COL.quote);
     const qid = quoteId(q);
     const isFav = App.favorites.some(f => quoteId(f) === qid);
     const name  = getCol(q, COL.name) || '?';
     const loc   = getCol(q, COL.location) || '';
     const cat   = getCol(q, COL.mainCat) || '';
+    const catHtml = cat ? ' <span class="history-cat-badge">' + esc(cat) + '</span>' : '';
+    const timeStr = timeAgo(entry.ts);
+    const timeHtml = timeStr ? '<span class="history-time">' + timeStr + '</span>' : '';
 
-    const catHtml = cat ? ` <span class="history-cat-badge">${esc(cat)}</span>` : '';
-
-    item.innerHTML =
-      '<button class="history-fav-btn' + (isFav ? ' active' : '') + '" title="Favori" aria-label="Ajouter aux favoris"><span class="fav-icon">' + (isFav ? '♥️' : '📌') + '</span></button>' +
+    return '<div class="history-item" data-idx="' + idx + '" data-rank="' + idx + '">' +
       '<div class="history-item-body">' +
         '<div class="history-quote">' + esc(quoteKey) + '</div>' +
-        '<div class="history-author"><span class="history-author-arrow">></span>' + esc(name) + ' · ' + esc(loc) + catHtml + '</div>' +
-      '</div>';
+        '<div class="history-meta">' +
+          '<div class="history-author"><span class="history-author-arrow">></span>' + esc(name) + ' · ' + esc(loc) + catHtml + '</div>' +
+          timeHtml +
+        '</div>' +
+      '</div>' +
+      '<button class="history-fav-btn' + (isFav ? ' active' : '') + '" data-fav="' + idx + '" aria-label="Favori"><span class="fav-icon">' + (isFav ? '♥️' : '📌') + '</span></button>' +
+    '</div>';
+  }).join('');
 
-    // Clic sur le bouton favori
-    const favBtn = item.querySelector('.history-fav-btn');
-    favBtn.addEventListener('click', (e) => {
+  list.innerHTML = html;
+
+  // Event delegation — single listener on the list
+  list.onclick = (e) => {
+    const favBtn = e.target.closest('[data-fav]');
+    if (favBtn) {
       e.stopPropagation();
-      const added = setFavorite(q);
+      const idx = parseInt(favBtn.dataset.fav);
+      const entry = App.sessionHistory[idx];
+      if (!entry) return;
+      const added = setFavorite(entry.q);
       favBtn.innerHTML = '<span class="fav-icon">' + (added ? '♥️' : '📌') + '</span>';
       favBtn.classList.toggle('active', added);
-    });
-
-    // Clic sur l'item = afficher la phrase
-    item.addEventListener('click', () => { displayQuote(q); navigate('quote'); });
-    list.appendChild(item);
-  });
+      return;
+    }
+    const item = e.target.closest('[data-idx]');
+    if (item) {
+      const idx = parseInt(item.dataset.idx);
+      const entry = App.sessionHistory[idx];
+      if (!entry) return;
+      displayQuote(entry.q);
+      navigate('quote');
+    }
+  };
 }
 
 // ═══════════════════════════════════════════════
@@ -7973,6 +8264,14 @@ function resetFilters() {
   App.statsDirty = true;
 }
 
+// Clear filters from stats banner and rebuild stats
+function clearStatsFilter() {
+  resetFilters();
+  App.statsDirty = true;
+  buildStats();
+  showToast('Filtres supprimés');
+}
+
 // ═══════════════════════════════════════════════
 //  STATS
 // ═══════════════════════════════════════════════
@@ -8033,133 +8332,194 @@ async function buildStats() {
     }
   }
 
-  // Overview
-  const uniqAuthors = new Set(App.allQuotes.map(q=>getCol(q,COL.name)).filter(isValid)).size;
-  // Top location (2nd result — assume 1st is Paris)
+  // Use filteredQuotes — show/hide top+bottom banners
+  const data = App.filteredQuotes;
+  const isFiltered = data.length !== App.allQuotes.length;
+  const bannerBottom = document.getElementById('stats-banner-bottom');
+  if (isFiltered) {
+    bannerBottom.classList.add('show');
+  } else {
+    bannerBottom.classList.remove('show');
+  }
+
+  // Empty state helpers
+  function showEmpty(cardId, msg) {
+    const card = document.getElementById(cardId);
+    if (!card) return;
+    const canvas = card.querySelector('canvas');
+    const empty = card.querySelector('.chart-empty');
+    if (canvas) canvas.style.display = 'none';
+    if (empty) { empty.textContent = msg; empty.style.display = ''; }
+  }
+  function clearEmpty(cardId) {
+    const card = document.getElementById(cardId);
+    if (!card) return;
+    const canvas = card.querySelector('canvas');
+    const empty = card.querySelector('.chart-empty');
+    if (canvas) canvas.style.display = '';
+    if (empty) empty.style.display = 'none';
+  }
+
+  // ── OVERVIEW ──
+  const uniqAuthors = new Set(data.map(q=>getCol(q,COL.name)).filter(isValid)).size;
   const locFreqOverview = {};
-  App.allQuotes.forEach(q => { const l = getCol(q,COL.location); if (isValid(l)) locFreqOverview[l]=(locFreqOverview[l]||0)+1; });
+  data.forEach(q => { const l = getCol(q,COL.location); if (isValid(l)) locFreqOverview[l]=(locFreqOverview[l]||0)+1; });
   const topLocSorted = Object.entries(locFreqOverview).sort((a,b)=>b[1]-a[1]);
   const topLocName = topLocSorted.length >= 2 ? topLocSorted[1][0] : (topLocSorted[0] ? topLocSorted[0][0] : '—');
-  // Catégorie la plus représentée (2ème résultat de mainCat, présenté comme #1)
   const catFreq = {};
-  App.allQuotes.forEach(q => { const c = getCol(q,COL.mainCat); if (isValid(c)) catFreq[c]=(catFreq[c]||0)+1; });
+  data.forEach(q => { const c = getCol(q,COL.mainCat); if (isValid(c)) catFreq[c]=(catFreq[c]||0)+1; });
   const overviewCatSorted = Object.entries(catFreq).sort((a,b)=>b[1]-a[1]);
   const topCatName = overviewCatSorted.length >= 2 ? overviewCatSorted[1][0] : (overviewCatSorted[0] ? overviewCatSorted[0][0] : '—');
 
   document.getElementById('stat-overview').innerHTML =
-    '<div class="stat-mini hero"><div class="num">' + App.allQuotes.length + '</div><div class="lbl">Phrases au total</div></div>' +
+    '<div class="stat-mini hero"><div class="num">' + data.length + '</div><div class="lbl">Phrases au total</div></div>' +
     '<div class="stat-mini"><div class="num" style="color:#4ade80">' + uniqAuthors + '</div><div class="lbl">Auteurs</div></div>' +
     '<div class="stat-mini"><div class="num" style="color:#fbbf24;font-size:14px">' + esc(topLocName) + '</div><div class="lbl">Top lieu</div></div>' +
     '<div class="stat-mini"><div class="num" style="color:#f472b6;font-size:14px">' + esc(topCatName) + '</div><div class="lbl">Catégorie #1</div></div>';
 
-  // Persons chart — top 10 (filter n/a)
+  // ── FUN FACTS ──
+  // Auteur le plus alcoolisé
+  const alcByAuthor = {};
+  data.forEach(q => {
+    const n = getCol(q,COL.name), a = getCol(q,COL.alcohol);
+    if (isValid(n) && /oui|yes|true/i.test(a)) alcByAuthor[n] = (alcByAuthor[n]||0)+1;
+  });
+  const alcSorted = Object.entries(alcByAuthor).sort((a,b)=>b[1]-a[1]);
+  const topAlcName = alcSorted.length ? alcSorted[0][0] : '—';
+  const topAlcCount = alcSorted.length ? alcSorted[0][1] : 0;
+
+  // Jour de la semaine le plus actif
+  const dayNames = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
+  const dayCounts = Array(7).fill(0);
+  data.forEach(q => { const d = parseDate(getCol(q,COL.ts)); if(d) dayCounts[d.getDay()]++; });
+  const topDayIdx = dayCounts.indexOf(Math.max(...dayCounts));
+  const topDayName = dayCounts[topDayIdx] > 0 ? dayNames[topDayIdx] : '—';
+  const topDayCount = dayCounts[topDayIdx];
+
+  document.getElementById('stat-fun').innerHTML =
+    '<div class="stat-mini"><div class="num" style="color:#fbbf24;font-size:14px">' + esc(topAlcName) + '</div><div class="lbl">🍺 + alcoolisé (' + topAlcCount + ')</div></div>' +
+    '<div class="stat-mini"><div class="num" style="color:#22d3ee;font-size:14px">' + esc(topDayName) + '</div><div class="lbl">📅 Jour + actif (' + topDayCount + ')</div></div>';
+
+  // ── PERSONS — top 10 ──
   const personCounts = {};
-  App.allQuotes.forEach(q => { const n = getCol(q,COL.name); if (isValid(n)) personCounts[n] = (personCounts[n]||0)+1; });
+  data.forEach(q => { const n = getCol(q,COL.name); if (isValid(n)) personCounts[n] = (personCounts[n]||0)+1; });
   const personSorted = Object.entries(personCounts).sort((a,b)=>b[1]-a[1]).slice(0,10);
   destroyChart('persons');
-  App.charts.persons = new Chart(document.getElementById('chart-persons'), {
-    type: 'bar',
-    data: { labels: personSorted.map(e=>e[0]), datasets:[{ data: personSorted.map(e=>e[1]), backgroundColor: personSorted.map(e=>labelColor(e[0])), borderRadius:8, borderSkipped:false }]},
-    options: chartOpts('Phrases')
-  });
-  chartClickFilter(App.charts.persons, 'authors', personSorted.map(e=>e[0]));
+  if (personSorted.length) {
+    clearEmpty('card-persons');
+    App.charts.persons = new Chart(document.getElementById('chart-persons'), {
+      type: 'bar',
+      data: { labels: personSorted.map(e=>e[0]), datasets:[{ data: personSorted.map(e=>e[1]), backgroundColor: personSorted.map(e=>labelColor(e[0])), borderRadius:8, borderSkipped:false }]},
+      options: chartOpts('Phrases')
+    });
+    chartClickFilter(App.charts.persons, 'authors', personSorted.map(e=>e[0]));
+  } else { showEmpty('card-persons', 'Aucun auteur trouvé'); }
 
-  // Main cats — donut with more hover detach
+  // ── CATEGORIES — donut ──
   const catCounts = {};
-  App.allQuotes.forEach(q => { const c = getCol(q,COL.mainCat); if (isValid(c)) catCounts[c]=(catCounts[c]||0)+1; });
+  data.forEach(q => { const c = getCol(q,COL.mainCat); if (isValid(c)) catCounts[c]=(catCounts[c]||0)+1; });
   const catSorted = Object.entries(catCounts).sort((a,b)=>b[1]-a[1]);
   const catTotal = catSorted.reduce((s,e)=>s+e[1],0);
   destroyChart('cats');
-  // Plugin inline pour afficher les % dans le donut
-  const doughnutPctPlugin = {
-    id: 'doughnutPct',
-    afterDatasetsDraw(chart) {
-      const { ctx, data } = chart;
-      const total = data.datasets[0].data.reduce((s,v)=>s+v,0);
-      ctx.save();
-      data.datasets[0].data.forEach((val, i) => {
-        const meta = chart.getDatasetMeta(0);
-        const arc  = meta.data[i];
-        if (!arc) return;
-        const pct = Math.round(val / total * 100);
-        if (pct < 4) return; // skip tiny slices
-        const angle = (arc.startAngle + arc.endAngle) / 2;
-        const r = (arc.innerRadius + arc.outerRadius) / 2;
-        const x = arc.x + Math.cos(angle) * r;
-        const y = arc.y + Math.sin(angle) * r;
-        ctx.fillStyle = '#fff';
-        ctx.font = 'bold 10px JetBrains Mono, monospace';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(pct + '%', x, y);
-      });
-      ctx.restore();
-    }
-  };
-  App.charts.cats = new Chart(document.getElementById('chart-cats'), {
-    type: 'doughnut',
-    data: { labels: catSorted.map(e=>e[0]), datasets:[{ data: catSorted.map(e=>e[1]), backgroundColor: catSorted.map(e=>labelColor(e[0])), borderWidth:0, borderColor:'transparent', hoverOffset:18, hoverBorderWidth:2, hoverBorderColor:'#fff' }]},
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      layout: { padding: { top: 10, bottom: 0 } },
-      plugins: {
-        legend: {
-          position:'bottom',
-          labels:{ font:{family:'JetBrains Mono',size:10}, color:'#8b8fac', boxWidth:10, padding:12, usePointStyle:true },
-          padding: 24
-        },
-        tooltip: { callbacks: { label: function(ctx) {
-          const pct = Math.round(ctx.raw / catTotal * 100);
-          return ' ' + ctx.label + ': ' + ctx.raw + ' (' + pct + '%)';
-        }}}
+  if (catSorted.length) {
+    clearEmpty('card-cats');
+    const doughnutPctPlugin = {
+      id: 'doughnutPct',
+      afterDatasetsDraw(chart) {
+        const { ctx, data } = chart;
+        const total = data.datasets[0].data.reduce((s,v)=>s+v,0);
+        ctx.save();
+        data.datasets[0].data.forEach((val, i) => {
+          const meta = chart.getDatasetMeta(0);
+          const arc  = meta.data[i];
+          if (!arc) return;
+          const pct = Math.round(val / total * 100);
+          if (pct < 4) return;
+          const angle = (arc.startAngle + arc.endAngle) / 2;
+          const r = (arc.innerRadius + arc.outerRadius) / 2;
+          const x = arc.x + Math.cos(angle) * r;
+          const y = arc.y + Math.sin(angle) * r;
+          ctx.fillStyle = '#fff';
+          ctx.font = 'bold 10px JetBrains Mono, monospace';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(pct + '%', x, y);
+        });
+        ctx.restore();
       }
-    },
-    plugins: [doughnutPctPlugin]
-  });
-  chartClickFilter(App.charts.cats, 'mainCats', catSorted.map(e=>e[0]));
+    };
+    App.charts.cats = new Chart(document.getElementById('chart-cats'), {
+      type: 'doughnut',
+      data: { labels: catSorted.map(e=>e[0]), datasets:[{ data: catSorted.map(e=>e[1]), backgroundColor: catSorted.map(e=>labelColor(e[0])), borderWidth:0, borderColor:'transparent', hoverOffset:18, hoverBorderWidth:2, hoverBorderColor:'#fff' }]},
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        layout: { padding: { top: 10, bottom: 0 } },
+        plugins: {
+          legend: {
+            position:'bottom',
+            labels:{ font:{family:'JetBrains Mono',size:10}, color:'#8b8fac', boxWidth:10, padding:12, usePointStyle:true },
+            padding: 24
+          },
+          tooltip: { callbacks: { label: function(ctx) {
+            const pct = Math.round(ctx.raw / catTotal * 100);
+            return ' ' + ctx.label + ': ' + ctx.raw + ' (' + pct + '%)';
+          }}}
+        }
+      },
+      plugins: [doughnutPctPlugin]
+    });
+    chartClickFilter(App.charts.cats, 'mainCats', catSorted.map(e=>e[0]));
+  } else { showEmpty('card-cats', 'Aucune catégorie trouvée'); }
 
-  // Hours
+  // ── HOURS ──
   const hourCounts = Array(24).fill(0);
-  App.allQuotes.forEach(q => { const d = parseDate(getCol(q,COL.ts)); if(d) hourCounts[d.getHours()]++; });
+  data.forEach(q => { const d = parseDate(getCol(q,COL.ts)); if(d) hourCounts[d.getHours()]++; });
   destroyChart('hours');
-  App.charts.hours = new Chart(document.getElementById('chart-hours'), {
-    type: 'line',
-    data: { labels: Array.from({length:24},(_,i)=>`${i}h`), datasets:[{ data:hourCounts, borderColor:'#5b4ff5', backgroundColor:'rgba(91,79,245,0.1)', fill:true, tension:0.4, pointRadius:3, pointBackgroundColor:'#5b4ff5' }]},
-    options: chartOpts('Phrases')
-  });
+  if (hourCounts.some(v => v > 0)) {
+    clearEmpty('card-hours');
+    App.charts.hours = new Chart(document.getElementById('chart-hours'), {
+      type: 'line',
+      data: { labels: Array.from({length:24},(_,i)=>`${i}h`), datasets:[{ data:hourCounts, borderColor:'#5b4ff5', backgroundColor:'rgba(91,79,245,0.1)', fill:true, tension:0.4, pointRadius:3, pointBackgroundColor:'#5b4ff5' }]},
+      options: chartOpts('Phrases')
+    });
+  } else { showEmpty('card-hours', 'Aucun horodateur disponible'); }
 
-  // Locations — in % (filter n/a)
+  // ── LOCATIONS (hors Paris) ──
   const locCounts = {};
-  App.allQuotes.forEach(q => {
+  data.forEach(q => {
     const l = getCol(q,COL.location);
     if (isValid(l)) locCounts[l]=(locCounts[l]||0)+1;
   });
-  const locSorted = Object.entries(locCounts).sort((a,b)=>b[1]-a[1]).slice(1,8); // skip 1st (Paris)
+  const locSorted = Object.entries(locCounts).sort((a,b)=>b[1]-a[1]).slice(1,8);
   destroyChart('locations');
-  App.charts.locations = new Chart(document.getElementById('chart-locations'), {
-    type: 'bar',
-    data: { labels: locSorted.map(e=>e[0]), datasets:[{ data: locSorted.map(e=>e[1]), backgroundColor: locSorted.map(e=>labelColor(e[0])), borderRadius:8, borderSkipped:false }]},
-    options: { ...chartOpts('Phrases'), indexAxis:'y' }
-  });
-  chartClickFilter(App.charts.locations, 'locations', locSorted.map(e=>e[0]));
+  if (locSorted.length) {
+    clearEmpty('card-locations');
+    App.charts.locations = new Chart(document.getElementById('chart-locations'), {
+      type: 'bar',
+      data: { labels: locSorted.map(e=>e[0]), datasets:[{ data: locSorted.map(e=>e[1]), backgroundColor: locSorted.map(e=>labelColor(e[0])), borderRadius:8, borderSkipped:false }]},
+      options: { ...chartOpts('Phrases'), indexAxis:'y' }
+    });
+    chartClickFilter(App.charts.locations, 'locations', locSorted.map(e=>e[0]));
+  } else { showEmpty('card-locations', 'Aucun lieu trouvé'); }
 
-  // Volumes (filter n/a)
+  // ── VOLUMES ──
   const volCounts = {};
-  App.allQuotes.forEach(q => { const v = getCol(q,COL.volume); if (isValid(v)) volCounts[v]=(volCounts[v]||0)+1; });
+  data.forEach(q => { const v = getCol(q,COL.volume); if (isValid(v)) volCounts[v]=(volCounts[v]||0)+1; });
+  destroyChart('volumes');
   if (Object.keys(volCounts).length) {
+    clearEmpty('card-volumes');
     const volSorted = Object.entries(volCounts).sort((a,b)=>{
       const na = parseInt(a[0])||0, nb = parseInt(b[0])||0;
       return na - nb || a[0].localeCompare(b[0]);
     });
-    destroyChart('volumes');
     App.charts.volumes = new Chart(document.getElementById('chart-volumes'), {
       type: 'bar',
       data: { labels: volSorted.map(e=>e[0]), datasets:[{ data:volSorted.map(e=>e[1]), backgroundColor: volSorted.map(e=>labelColor(e[0])), borderRadius:8, borderSkipped:false }]},
       options: chartOpts('Phrases')
     });
     chartClickFilter(App.charts.volumes, 'volumes', volSorted.map(e=>e[0]));
-  }
+  } else { showEmpty('card-volumes', 'Aucun volume trouvé'); }
 
   App.statsDirty = false;
   // Fade in after build
@@ -8212,8 +8572,11 @@ function chartClickFilter(chart, filterKey, labels) {
       const chips = document.querySelectorAll('#' + chipContainer + ' .chip');
       chips.forEach(c => { if (c.textContent === label) c.classList.add('active'); });
     }
-    navigate('quote');
-    showRandom();
+    // Stay on stats — rebuild with filtered data
+    App.statsDirty = true;
+    buildStats();
+    // Scroll to top of stats
+    document.getElementById('screen-stats').scrollTo({ top: 0, behavior: 'smooth' });
     showToast('Filtre : ' + label);
   };
 }
@@ -8446,6 +8809,15 @@ function showToast(msg) {
   App.toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
 }
 
+function dismissInstallBanner() {
+  document.getElementById('pwa-install-overlay').classList.remove('show');
+  // If checkbox checked, remember permanently
+  if (document.getElementById('pwa-noremind').checked) {
+    localStorage.setItem('qapp_install_never', '1');
+  }
+  localStorage.setItem('qapp_install_dismissed', '1');
+}
+
 // ═══════════════════════════════════════════════
 //  INIT
 // ═══════════════════════════════════════════════
@@ -8457,8 +8829,25 @@ window.addEventListener('DOMContentLoaded', () => {
   // Charge data.json depuis GitHub Pages
   fetchData();
 
-  // PWA service worker
   
+
+  // ── PWA: Install Prompt ──
+  (function initInstallBanner() {
+    // Already installed as PWA → skip
+    if (window.matchMedia('(display-mode: standalone)').matches) return;
+    if (window.navigator.standalone === true) return; // iOS
+
+    // User checked "ne plus me le rappeler" → never show again
+    if (localStorage.getItem('qapp_install_never')) return;
+
+    // Already dismissed this session → still show next time (unless _never)
+    if (localStorage.getItem('qapp_install_dismissed')) return;
+
+    // Show after 5 seconds
+    setTimeout(() => {
+      document.getElementById('pwa-install-overlay').classList.add('show');
+    }, 5000);
+  })();
 
   // Raccourci clavier : espace / entrée → phrase suivante
   document.addEventListener('keydown', e => {
