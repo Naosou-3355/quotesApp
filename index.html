@@ -1201,48 +1201,23 @@
       line-height: 1.6;
       margin-bottom: 8px;
     }
-    .pwa-install-card .pwa-author {
-      font-size: 12px;
-      color: var(--text-dim);
-      font-family: var(--font-mono);
-      margin-bottom: 14px;
-    }
-    .pwa-install-card .pwa-author span { color: var(--accent); }
     .pwa-install-card .pwa-actions {
       display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
+      justify-content: flex-end;
     }
     .pwa-install-card .pwa-dismiss {
       background: none;
-      border: 1px solid var(--border);
-      color: var(--text-dim);
+      border: 1px solid var(--accent);
+      color: var(--accent);
       font-family: var(--font-mono);
       font-size: 10px;
-      padding: 6px 14px;
+      padding: 6px 12px;
       border-radius: var(--radius-sm);
       cursor: pointer;
-      letter-spacing: 0.5px;
-      flex-shrink: 0;
+      white-space: nowrap;
+      letter-spacing: 0.3px;
     }
     .pwa-install-card .pwa-dismiss:active { opacity: 0.7; }
-    .pwa-install-card .pwa-check-label {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 10px;
-      color: var(--text-dim);
-      font-family: var(--font-mono);
-      cursor: pointer;
-      user-select: none;
-    }
-    .pwa-install-card .pwa-check-label input {
-      accent-color: var(--accent);
-      width: 13px;
-      height: 13px;
-      cursor: pointer;
-    }
 
     /* ── PWA UPDATE BANNER ── */
     .pwa-update-banner {
@@ -1654,13 +1629,8 @@
 <div class="pwa-install-overlay" id="pwa-install-overlay">
   <div class="pwa-install-card">
     <div class="pwa-quote">Pour installer l'application, appuyez sur Partager → Sur l'écran d'accueil</div>
-    <div class="pwa-author"><span>></span> our quotes · installation</div>
     <div class="pwa-actions">
-      <label class="pwa-check-label">
-        <input type="checkbox" id="pwa-noremind">
-        Ne plus me le rappeler
-      </label>
-      <button class="pwa-dismiss" onclick="dismissInstallBanner()">OK, compris</button>
+      <button class="pwa-dismiss" onclick="dismissInstallBanner()">J'ai compris</button>
     </div>
   </div>
 </div>
@@ -1874,7 +1844,7 @@ function showRandom() {
   displayQuote(App.shuffleQueue.pop());
 }
 
-function displayQuote(q) {
+function displayQuote(q, instant) {
   App.currentQuote = q;
 
   const centerEl = document.getElementById('quote-center');
@@ -1913,8 +1883,9 @@ function displayQuote(q) {
     bottomEl.classList.add('animating');
   }
 
-  // If already displaying content, do exit → enter crossfade
-  const hasContent = document.getElementById('quote-text').textContent.length > 40;
+  // instant=true → apply immediately (used when navigating from another tab)
+  // Otherwise, crossfade exit → enter
+  const hasContent = !instant && document.getElementById('quote-text').textContent.length > 40;
   if (hasContent) {
     centerEl.classList.remove('animating', 'exiting');
     bottomEl.classList.remove('animating', 'exiting');
@@ -2066,7 +2037,7 @@ function openHistorySheet() {
       const item = document.createElement('div');
       item.className = 'sheet-item';
       item.textContent = getCol(q, COL.quote);
-      item.onclick = () => { displayQuote(q); navigate('quote'); closeHistorySheetSmooth(); };
+      item.onclick = () => { displayQuote(q, true); navigate('quote'); closeHistorySheetSmooth(); };
       list.appendChild(item);
     });
   }
@@ -2198,7 +2169,7 @@ function renderHistory() {
     const idx = parseInt(wrapper.dataset.idx);
     const entry = App.sessionHistory[idx];
     if (!entry) return;
-    displayQuote(entry.q);
+    displayQuote(entry.q, true);
     navigate('quote');
   };
 
@@ -2496,13 +2467,13 @@ async function buildStats() {
       '</div>';
 
     document.getElementById('stat-daily-item').onclick = () => {
-      displayQuote(pick);
+      displayQuote(pick, true);
       navigate('quote');
     };
   } else {
     dailyEl.innerHTML = '<div class="stat-daily-empty">' +
       '<span>Aucune phrase un ' + todayDate + '/' + String(todayMonth + 1).padStart(2, '0') + '</span>' +
-      '<a href="sms:?body=💬 Nouvelle phrase pour our quotes !" class="daily-send-btn" style="text-decoration:none">J\'envoie une phrase 💬</a>' +
+      '<a href="sms:?body=💬 Nouvelle phrase pépite du jour : " class="daily-send-btn" style="text-decoration:none">J\'envoie une phrase 💬</a>' +
     '</div>';
   }
 
@@ -2917,11 +2888,7 @@ function showToast(msg) {
 
 function dismissInstallBanner() {
   document.getElementById('pwa-install-overlay').classList.remove('show');
-  // If checkbox checked, remember permanently
-  if (document.getElementById('pwa-noremind').checked) {
-    localStorage.setItem('qapp_install_never', '1');
-  }
-  localStorage.setItem('qapp_install_dismissed', '1');
+  sessionStorage.setItem('qapp_install_dismissed', '1');
 }
 
 // ═══════════════════════════════════════════════
@@ -2969,15 +2936,12 @@ window.addEventListener('DOMContentLoaded', () => {
 
   // ── PWA: Install Prompt ──
   (function initInstallBanner() {
-    // Already installed as PWA → skip
+    // Already installed as PWA → never show
     if (window.matchMedia('(display-mode: standalone)').matches) return;
     if (window.navigator.standalone === true) return; // iOS
 
-    // User checked "ne plus me le rappeler" → never show again
-    if (localStorage.getItem('qapp_install_never')) return;
-
-    // Already dismissed this session → still show next time (unless _never)
-    if (localStorage.getItem('qapp_install_dismissed')) return;
+    // Already dismissed this session
+    if (sessionStorage.getItem('qapp_install_dismissed')) return;
 
     // Show after 5 seconds
     setTimeout(() => {
