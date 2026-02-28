@@ -1,41 +1,71 @@
-// Increment this version string each time you update index.html on GitHub
-const CACHE = 'quoteapp-v2';
-const ASSETS = [
+// ═══════════════════════════════════════════════
+// SERVICE WORKER — QuoteApp
+// ═══════════════════════════════════════════════
+// INCREMENT this on every deploy to trigger update:
+const CACHE_VERSION = 3;
+const CACHE_NAME = 'quoteapp-v' + CACHE_VERSION;
+
+// Core assets to pre-cache on install
+const PRECACHE = [
   './',
   './index.html',
-  './manifest.json',
   './data.json',
+  './manifest.json'
 ];
 
-self.addEventListener('install', e => {
+// ── INSTALL: pre-cache core assets ──
+self.addEventListener('install', (e) => {
   e.waitUntil(
-    caches.open(CACHE).then(c => c.addAll(ASSETS).catch(() => {}))
+    caches.open(CACHE_NAME)
+      .then(cache => cache.addAll(PRECACHE))
+      .catch(err => console.warn('SW precache fail:', err))
   );
-  // Do NOT call skipWaiting() — let the app show the update banner
+  // Do NOT skipWaiting — let the client show the update popup
 });
 
-self.addEventListener('activate', e => {
+// ── ACTIVATE: purge all old caches ──
+self.addEventListener('activate', (e) => {
   e.waitUntil(
     caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
+      Promise.all(
+        keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
+      )
+    ).then(() => self.clients.claim())
+  );
+});
+
+// ── FETCH: stale-while-revalidate ──
+self.addEventListener('fetch', (e) => {
+  const req = e.request;
+  if (req.method !== 'GET' || !req.url.startsWith('http')) return;
+
+  // Navigation (HTML): network-first, cache fallback
+  if (req.mode === 'navigate') {
+    e.respondWith(
+      fetch(req).then(res => {
+        const clone = res.clone();
+        caches.open(CACHE_NAME).then(c => c.put(req, clone));
+        return res;
+      }).catch(() => caches.match(req).then(r => r || caches.match('./')))
+    );
+    return;
+  }
+
+  // Other assets: serve cache, update in background
+  e.respondWith(
+    caches.open(CACHE_NAME).then(cache =>
+      cache.match(req).then(cached => {
+        const fresh = fetch(req).then(res => {
+          if (res.ok) cache.put(req, res.clone());
+          return res;
+        }).catch(() => null);
+        return cached || fresh;
+      })
     )
   );
-  self.clients.claim();
 });
 
-self.addEventListener('fetch', e => {
-  e.respondWith(
-    fetch(e.request)
-      .then(res => {
-        const clone = res.clone();
-        caches.open(CACHE).then(c => c.put(e.request, clone));
-        return res;
-      })
-      .catch(() => caches.match(e.request))
-  );
-});
-
-// Listen for skip message from the app (when user taps "update")
-self.addEventListener('message', e => {
+// ── MESSAGE: client triggers activation ──
+self.addEventListener('message', (e) => {
   if (e.data === 'skipWaiting') self.skipWaiting();
 });

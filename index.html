@@ -48,8 +48,14 @@
     * { -webkit-user-select: none; user-select: none; }
     input, textarea { -webkit-user-select: text; user-select: text; }
 
-    html, body {
+    html {
       height: 100%;
+      height: -webkit-fill-available;
+    }
+    body {
+      height: 100%;
+      min-height: 100vh;
+      min-height: -webkit-fill-available;
       font-family: var(--font-mono);
       background: var(--bg);
       color: var(--text);
@@ -78,7 +84,9 @@
     .app {
       display: flex;
       flex-direction: column;
+      height: 100vh;
       height: 100dvh;
+      height: -webkit-fill-available;
       max-width: 480px;
       margin: 0 auto;
       background: var(--bg);
@@ -749,7 +757,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: flex-end;
+      justify-content: center;
     }
     .stat-mini.hero {
       grid-column: 1 / -1;
@@ -770,7 +778,7 @@
       word-break: break-word;
       flex: 1;
       display: flex;
-      align-items: flex-end;
+      align-items: center;
       justify-content: center;
       text-align: center;
       min-height: 0;
@@ -1160,11 +1168,11 @@
       transform: translateX(-50%) translateY(0);
     }
 
-    /* ── PWA INSTALL PROMPT — centered overlay, LOG item style ── */
-    .pwa-install-overlay {
+    /* ── POPUP SYSTEM (shared overlay + cards) ── */
+    .popup-overlay {
       position: fixed;
       inset: 0;
-      z-index: 210;
+      z-index: 300;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -1175,78 +1183,116 @@
       pointer-events: none;
       transition: opacity 0.3s ease;
     }
-    .pwa-install-overlay.show {
+    .popup-overlay.show {
       opacity: 1;
       pointer-events: auto;
     }
-    .pwa-install-card {
+    .popup-card {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius-sm);
-      padding: 14px 14px 12px 16px;
-      max-width: 320px;
+      padding: 18px 18px 14px;
+      max-width: 310px;
       width: calc(100% - 48px);
       transform: scale(0.92) translateY(10px);
       transition: transform 0.3s ease;
     }
-    .pwa-install-overlay.show .pwa-install-card {
+    .popup-overlay.show .popup-card {
       transform: scale(1) translateY(0);
     }
-    .pwa-install-card .pwa-quote {
+    .popup-card .popup-text {
       font-family: var(--font-body);
       font-size: 14px;
-      font-style: italic;
       font-weight: 300;
       color: var(--text);
       line-height: 1.6;
-      margin-bottom: 8px;
+      margin-bottom: 14px;
     }
-    .pwa-install-card .pwa-actions {
+    .popup-card .popup-text strong {
+      color: var(--accent);
+      font-weight: 500;
+    }
+    .popup-card .popup-actions {
       display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .popup-card .popup-actions.end {
       justify-content: flex-end;
     }
-    .pwa-install-card .pwa-dismiss {
+    .popup-card .popup-btn {
       background: none;
       border: 1px solid var(--accent);
       color: var(--accent);
       font-family: var(--font-mono);
       font-size: 10px;
-      padding: 6px 12px;
+      padding: 6px 14px;
       border-radius: var(--radius-sm);
       cursor: pointer;
       white-space: nowrap;
       letter-spacing: 0.3px;
+      text-decoration: none;
     }
-    .pwa-install-card .pwa-dismiss:active { opacity: 0.7; }
-
-    /* ── PWA UPDATE BANNER ── */
-    .pwa-update-banner {
-      position: fixed;
-      top: calc(var(--safe-top) + 62px);
-      left: 50%;
-      transform: translateX(-50%) translateY(-20px);
-      z-index: 210;
-      background: #1e2140;
-      border: 1px solid #4ade80;
-      border-radius: var(--radius);
-      padding: 10px 18px;
+    .popup-card .popup-btn:active { opacity: 0.7; }
+    .popup-card .popup-check {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 10px;
+      color: var(--text-dim);
       font-family: var(--font-mono);
-      font-size: 11px;
-      color: var(--text);
-      white-space: nowrap;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.45), 0 0 10px rgba(74,222,128,0.2);
-      opacity: 0;
-      pointer-events: none;
       cursor: pointer;
-      -webkit-tap-highlight-color: transparent;
-      transition: opacity 0.3s ease, transform 0.3s ease;
+      user-select: none;
     }
-    .pwa-update-banner.show {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0);
-      pointer-events: auto;
+    .popup-card .popup-check input {
+      accent-color: var(--accent);
+      width: 13px;
+      height: 13px;
+      cursor: pointer;
     }
-    .pwa-update-banner:active { transform: translateX(-50%) scale(0.95); }
+    /* Code input */
+    .popup-code-input {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+    .popup-code-input input {
+      width: 36px;
+      height: 42px;
+      text-align: center;
+      font-family: var(--font-mono);
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--accent);
+      background: rgba(0,0,0,0.3);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      outline: none;
+      caret-color: var(--accent);
+      transition: border-color 0.15s;
+    }
+    .popup-code-input input:focus {
+      border-color: var(--accent);
+    }
+    .popup-code-input input.error {
+      border-color: #ef4444;
+      animation: codeShake 0.4s ease;
+    }
+    @keyframes codeShake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-4px); }
+      40%, 80% { transform: translateX(4px); }
+    }
+    .popup-code-error {
+      text-align: center;
+      font-size: 10px;
+      color: #ef4444;
+      font-family: var(--font-mono);
+      margin: -8px 0 10px;
+      min-height: 14px;
+    }
 
     /* ── SCROLLBAR ── */
     ::-webkit-scrollbar { width: 3px; }
@@ -1625,19 +1671,44 @@
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
-<!-- PWA INSTALL PROMPT -->
-<div class="pwa-install-overlay" id="pwa-install-overlay">
-  <div class="pwa-install-card">
-    <div class="pwa-quote">Pour installer l'application, appuyez sur Partager → Sur l'écran d'accueil</div>
-    <div class="pwa-actions">
-      <button class="pwa-dismiss" onclick="dismissInstallBanner()">J'ai compris</button>
+<!-- POPUP: CODE D'ACCES -->
+<div class="popup-overlay" id="popup-code">
+  <div class="popup-card">
+    <div class="popup-text" style="text-align:center;margin-bottom:10px">Entrez le code d'accès</div>
+    <div class="popup-code-input" id="code-inputs">
+      <input type="tel" maxlength="1" inputmode="numeric" autocomplete="off">
+      <input type="tel" maxlength="1" inputmode="numeric" autocomplete="off">
+      <input type="tel" maxlength="1" inputmode="numeric" autocomplete="off">
+      <input type="tel" maxlength="1" inputmode="numeric" autocomplete="off">
+      <input type="tel" maxlength="1" inputmode="numeric" autocomplete="off">
+      <input type="tel" maxlength="1" inputmode="numeric" autocomplete="off">
+    </div>
+    <div class="popup-code-error" id="code-error"></div>
+  </div>
+</div>
+
+<!-- POPUP: MISE A JOUR -->
+<div class="popup-overlay" id="popup-update">
+  <div class="popup-card">
+    <div class="popup-text">🆕 Une nouvelle version est disponible.</div>
+    <div class="popup-actions end">
+      <button class="popup-btn" id="popup-update-btn">Mettre à jour</button>
     </div>
   </div>
 </div>
 
-<!-- PWA UPDATE BANNER -->
-<div class="pwa-update-banner" id="pwa-update-banner">
-  🆕 Nouvelle version disponible — appuyez pour mettre à jour
+<!-- POPUP: INSTALLATION PWA -->
+<div class="popup-overlay" id="popup-install">
+  <div class="popup-card">
+    <div class="popup-text">Pour installer l'application :<br>Cliquez sur <strong>Partager</strong> → <strong>Ajouter à l'écran d'accueil</strong></div>
+    <div class="popup-actions">
+      <label class="popup-check">
+        <input type="checkbox" id="install-noremind">
+        Ne plus me le rappeler
+      </label>
+      <button class="popup-btn" id="popup-install-btn">J'ai compris</button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -2177,7 +2248,10 @@ function renderHistory() {
   initHistorySwipe();
 }
 
+let _historySwipeInit = false;
 function initHistorySwipe() {
+  if (_historySwipeInit) return;
+  _historySwipeInit = true;
   const list = document.getElementById('history-list');
   let startX = 0, startY = 0, currentItem = null, swiping = false;
 
@@ -2886,9 +2960,128 @@ function showToast(msg) {
   App.toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
 }
 
-function dismissInstallBanner() {
-  document.getElementById('pwa-install-overlay').classList.remove('show');
-  sessionStorage.setItem('qapp_install_dismissed', '1');
+// ═══════════════════════════════════════════════
+//  POPUP QUEUE SYSTEM
+// ═══════════════════════════════════════════════
+const APP_VERSION = '3';
+const ACCESS_CODE = '751101';
+
+const PopupQueue = {
+  queue: [],
+  active: false,
+  add(id) { this.queue.push(id); if (!this.active) this.next(); },
+  next() {
+    if (!this.queue.length) { this.active = false; return; }
+    this.active = true;
+    const id = this.queue.shift();
+    const el = document.getElementById(id);
+    if (!el) { this.next(); return; }
+    requestAnimationFrame(() => el.classList.add('show'));
+  },
+  dismiss(id) {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('show');
+    setTimeout(() => this.next(), 350);
+  }
+};
+
+// ── CODE D'ACCÈS ──
+function initCodePopup() {
+  const lastVersion = localStorage.getItem('qapp_code_version');
+  // Show if: first time OR version changed
+  if (lastVersion === APP_VERSION) return false;
+
+  const inputs = document.querySelectorAll('#code-inputs input');
+  const errorEl = document.getElementById('code-error');
+
+  inputs.forEach((inp, i) => {
+    inp.addEventListener('input', () => {
+      inp.value = inp.value.replace(/\D/g, '');
+      if (inp.value && i < inputs.length - 1) inputs[i + 1].focus();
+      // Auto-validate when all filled
+      const code = Array.from(inputs).map(x => x.value).join('');
+      if (code.length === 6) validateCode(code);
+    });
+    inp.addEventListener('keydown', (e) => {
+      if (e.key === 'Backspace' && !inp.value && i > 0) {
+        inputs[i - 1].focus();
+        inputs[i - 1].value = '';
+      }
+    });
+    // Paste support
+    inp.addEventListener('paste', (e) => {
+      e.preventDefault();
+      const paste = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '');
+      paste.split('').slice(0, 6).forEach((c, j) => {
+        if (inputs[j]) inputs[j].value = c;
+      });
+      if (paste.length >= 6) validateCode(paste.slice(0, 6));
+      else if (inputs[paste.length]) inputs[paste.length].focus();
+    });
+  });
+
+  function validateCode(code) {
+    if (code === ACCESS_CODE) {
+      localStorage.setItem('qapp_code_version', APP_VERSION);
+      errorEl.textContent = '';
+      PopupQueue.dismiss('popup-code');
+    } else {
+      errorEl.textContent = 'Code incorrect';
+      inputs.forEach(inp => { inp.classList.add('error'); inp.value = ''; });
+      inputs[0].focus();
+      setTimeout(() => inputs.forEach(inp => inp.classList.remove('error')), 500);
+    }
+  }
+
+  // Focus first input when popup appears
+  const observer = new MutationObserver(() => {
+    if (document.getElementById('popup-code').classList.contains('show')) {
+      setTimeout(() => inputs[0].focus(), 100);
+    }
+  });
+  observer.observe(document.getElementById('popup-code'), { attributes: true, attributeFilter: ['class'] });
+
+  return true; // needs to show
+}
+
+// ── MISE À JOUR (SW) ──
+function initUpdatePopup(swReg) {
+  if (!swReg) return;
+
+  function triggerUpdate() {
+    document.getElementById('popup-update-btn').onclick = () => {
+      if (swReg.waiting) swReg.waiting.postMessage('skipWaiting');
+      PopupQueue.dismiss('popup-update');
+    };
+    PopupQueue.add('popup-update');
+  }
+
+  if (swReg.waiting) triggerUpdate();
+  swReg.addEventListener('updatefound', () => {
+    const newSW = swReg.installing;
+    if (!newSW) return;
+    newSW.addEventListener('statechange', () => {
+      if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
+        triggerUpdate();
+      }
+    });
+  });
+}
+
+// ── INSTALLATION PWA ──
+function initInstallPopup() {
+  if (window.matchMedia('(display-mode: standalone)').matches) return;
+  if (window.navigator.standalone === true) return;
+  if (localStorage.getItem('qapp_install_never')) return;
+
+  document.getElementById('popup-install-btn').onclick = () => {
+    if (document.getElementById('install-noremind').checked) {
+      localStorage.setItem('qapp_install_never', '1');
+    }
+    PopupQueue.dismiss('popup-install');
+  };
+
+  PopupQueue.add('popup-install');
 }
 
 // ═══════════════════════════════════════════════
@@ -2902,30 +3095,19 @@ window.addEventListener('DOMContentLoaded', () => {
   // Charge data.json depuis GitHub Pages
   fetchData();
 
-  // ── PWA: Service Worker + Update Detection ──
+  // ── POPUP QUEUE: Code → Update → Install ──
+  // 1. Code d'accès (si version changée ou premier lancement)
+  const needsCode = initCodePopup();
+  if (needsCode) PopupQueue.add('popup-code');
+
+  // 2. PWA: Service Worker + Update Detection
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js').then(reg => {
-      // Check for updates every 60s
+      // Check for updates immediately on load, then every 60s
+      reg.update().catch(() => {});
       setInterval(() => reg.update(), 60000);
+      initUpdatePopup(reg);
 
-      // Detect new SW waiting → show update banner
-      function showUpdateBanner() {
-        document.getElementById('pwa-update-banner').classList.add('show');
-        // On click, tell waiting SW to activate
-        document.getElementById('pwa-update-banner').onclick = () => {
-          if (reg.waiting) reg.waiting.postMessage('skipWaiting');
-        };
-      }
-      if (reg.waiting) showUpdateBanner();
-      reg.addEventListener('updatefound', () => {
-        const newSW = reg.installing;
-        if (!newSW) return;
-        newSW.addEventListener('statechange', () => {
-          if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
-            showUpdateBanner();
-          }
-        });
-      });
       // Auto-reload when new SW takes over
       let refreshing = false;
       navigator.serviceWorker.addEventListener('controllerchange', () => {
@@ -2934,20 +3116,8 @@ window.addEventListener('DOMContentLoaded', () => {
     }).catch(() => {});
   }
 
-  // ── PWA: Install Prompt ──
-  (function initInstallBanner() {
-    // Already installed as PWA → never show
-    if (window.matchMedia('(display-mode: standalone)').matches) return;
-    if (window.navigator.standalone === true) return; // iOS
-
-    // Already dismissed this session
-    if (sessionStorage.getItem('qapp_install_dismissed')) return;
-
-    // Show after 5 seconds
-    setTimeout(() => {
-      document.getElementById('pwa-install-overlay').classList.add('show');
-    }, 5000);
-  })();
+  // 3. Install prompt (delayed 5s, added to queue after code/update)
+  setTimeout(() => initInstallPopup(), 5000);
 
   // Raccourci clavier : espace / entrée → phrase suivante
   document.addEventListener('keydown', e => {
@@ -2967,7 +3137,6 @@ window.addEventListener('DOMContentLoaded', () => {
     quoteScreen.addEventListener('touchend', e => {
       const dx = e.changedTouches[0].clientX - startX;
       const dy = e.changedTouches[0].clientY - startY;
-      // Only trigger on horizontal swipes (dx > 80px, and more horizontal than vertical)
       if (Math.abs(dx) > 80 && Math.abs(dx) > Math.abs(dy) * 1.5) {
         showRandom();
       }
