@@ -643,6 +643,58 @@
       grid-template-columns: 1fr 1fr;
     }
 
+    /* Phrase du jour — clickable item in stats */
+    .stat-daily-item {
+      padding: 10px 12px;
+      cursor: pointer;
+      border-radius: var(--radius-sm);
+      transition: background 0.15s;
+    }
+    .stat-daily-item:active { background: rgba(124,106,247,0.08); }
+    .stat-daily-quote {
+      font-family: var(--font-body);
+      font-size: 13px;
+      font-style: italic;
+      font-weight: 300;
+      color: var(--text);
+      line-height: 1.5;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .stat-daily-author {
+      font-size: 11px;
+      color: var(--accent);
+      font-family: var(--font-mono);
+      margin-top: 6px;
+    }
+    .stat-daily-author span { color: var(--text-dim); }
+    .stat-daily-empty {
+      font-size: 11px;
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+      padding: 10px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .stat-daily-empty .daily-send-btn {
+      flex-shrink: 0;
+      background: none;
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      white-space: nowrap;
+      letter-spacing: 0.3px;
+    }
+    .stat-daily-empty .daily-send-btn:active { opacity: 0.7; }
+
     /* Section separators */
     .stats-section-label {
       font-size: 10px;
@@ -720,6 +772,8 @@
       display: flex;
       align-items: flex-end;
       justify-content: center;
+      text-align: center;
+      min-height: 0;
     }
     .stat-mini .lbl {
       font-size: 10px;
@@ -747,19 +801,46 @@
       gap: 10px;
     }
 
+    /* Swipe wrapper */
+    .history-swipe {
+      position: relative;
+      overflow: hidden;
+      border-radius: var(--radius-sm);
+    }
+    /* Swipe background layers */
+    .history-swipe-bg {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      padding: 0 18px;
+      font-size: 13px;
+      font-family: var(--font-mono);
+      letter-spacing: 0.5px;
+      pointer-events: none;
+    }
+    .history-swipe-bg.bg-fav {
+      background: rgba(244,114,182,0.12);
+      justify-content: flex-start;
+      color: #f472b6;
+    }
+    .history-swipe-bg.bg-del {
+      background: rgba(239,68,68,0.12);
+      justify-content: flex-end;
+      color: #ef4444;
+    }
+
     .history-item {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius-sm);
-      padding: 12px 12px 12px 16px;
+      padding: 12px 16px;
       cursor: pointer;
-      transition: border-color 0.15s, opacity 0.2s;
       position: relative;
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
+      transition: transform 0.2s ease, opacity 0.3s;
+      touch-action: pan-y;
     }
-    /* Hiérarchie visuelle : les plus anciens s'estompent */
+    /* Hiérarchie visuelle */
     .history-item[data-rank="0"],
     .history-item[data-rank="1"],
     .history-item[data-rank="2"] { opacity: 1; }
@@ -782,6 +863,8 @@
     .history-item[data-rank="19"] { opacity: 0.42; }
     /* Premier item — accent border */
     .history-item[data-rank="0"] { border-color: rgba(124,106,247,0.3); }
+    /* Favori — subtle left accent bar */
+    .history-item.is-fav { border-left: 3px solid #f472b6; }
 
     .history-item:active { border-color: var(--accent); opacity: 1; }
     .history-item-body { flex: 1; min-width: 0; }
@@ -831,24 +914,27 @@
       font-style: normal;
       white-space: nowrap;
     }
-    /* Fav button — à droite (body first, then fav) */
-    .history-fav-btn {
-      flex-shrink: 0;
-      width: 36px; height: 36px;
-      border-radius: var(--radius);
-      border: 1px solid var(--border);
-      background: var(--surface);
-      cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      transition: all 0.15s;
-      -webkit-tap-highlight-color: transparent;
-      font-size: 18px;
-      line-height: 1;
-      align-self: center;
-      order: 1;
+    /* Swipe remove animation */
+    .history-swipe.removing {
+      max-height: 200px;
+      transition: max-height 0.3s ease, opacity 0.3s ease;
     }
-    .history-fav-btn:active { transform: scale(0.9); }
-    .history-fav-btn.active { border-color: #f472b644; background: #f472b611; }
+    .history-swipe.removing.gone {
+      max-height: 0;
+      opacity: 0;
+      overflow: hidden;
+      margin: 0;
+    }
+    /* Empty state animation */
+    .empty-state .empty-icon {
+      font-size: 40px;
+      opacity: 0.5;
+      animation: emptyPulse 3s ease-in-out infinite;
+    }
+    @keyframes emptyPulse {
+      0%, 100% { opacity: 0.3; transform: scale(1); }
+      50% { opacity: 0.6; transform: scale(1.1); }
+    }
 
     /* ── BOTTOM NAV ── */
     .bottom-nav {
@@ -1436,8 +1522,8 @@
       <div class="stat-grid" id="stat-overview"></div>
     </div>
     <div class="stats-card">
-      <div class="stats-card-title">fun facts</div>
-      <div class="stat-grid stat-grid-2" id="stat-fun"></div>
+      <div class="stats-card-title">phrase du jour</div>
+      <div id="stat-daily"></div>
     </div>
 
     <div class="stats-section-label">répartition</div>
@@ -1475,8 +1561,8 @@
   <!-- SCREEN : HISTORY -->
   <div class="screen" id="screen-history">
     <div class="empty-state" id="history-empty">
-      <div class="empty-icon">◌</div>
-      <p>// aucun historique<br>tirez des phrases aléatoires<br>pour les voir apparaître ici</p>
+      <div class="empty-icon">🎲</div>
+      <p>// aucun historique<br>tirez des phrases pour les<br>voir apparaître ici<br><br><span style="color:var(--accent);font-size:10px">← swipe droite = favori · swipe gauche = supprimer →</span></p>
     </div>
     <div id="history-list"></div>
   </div>
@@ -1492,7 +1578,7 @@
       <span class="nav-icon">📊</span>stats
     </button>
     <button class="nav-btn" onclick="navigate('history')" id="nav-history" aria-label="Historique de session">
-      <span class="nav-icon">💾</span>log
+      <span class="nav-icon">💾</span>historique
     </button>
   </nav>
 
@@ -1723,7 +1809,7 @@ function initData(data) {
   try {
     const saved = JSON.parse(localStorage.getItem('qapp_history') || '[]');
     App.sessionHistory = saved.slice(0, 20).map(entry => {
-      if (entry && entry.q) return entry; // new format
+      if (entry && entry.ts !== undefined && entry.q) return entry; // new format {q, ts}
       return { q: entry, ts: 0 }; // legacy: raw quote row, no timestamp
     });
   } catch(e) { App.sessionHistory = []; }
@@ -2080,8 +2166,7 @@ function renderHistory() {
   const html = App.sessionHistory.map((entry, idx) => {
     const q = entry.q;
     const quoteKey = getCol(q, COL.quote);
-    const qid = quoteId(q);
-    const isFav = App.favorites.some(f => quoteId(f) === qid);
+    const isFav = App.favorites.some(f => quoteId(f) === quoteId(q));
     const name  = getCol(q, COL.name) || '?';
     const loc   = getCol(q, COL.location) || '';
     const cat   = getCol(q, COL.mainCat) || '';
@@ -2089,42 +2174,106 @@ function renderHistory() {
     const timeStr = timeAgo(entry.ts);
     const timeHtml = timeStr ? '<span class="history-time">' + timeStr + '</span>' : '';
 
-    return '<div class="history-item" data-idx="' + idx + '" data-rank="' + idx + '">' +
-      '<div class="history-item-body">' +
-        '<div class="history-quote">' + esc(quoteKey) + '</div>' +
-        '<div class="history-meta">' +
-          '<div class="history-author"><span class="history-author-arrow">></span>' + esc(name) + ' · ' + esc(loc) + catHtml + '</div>' +
-          timeHtml +
+    return '<div class="history-swipe" data-idx="' + idx + '">' +
+      '<div class="history-swipe-bg bg-fav">♥️ Favori</div>' +
+      '<div class="history-swipe-bg bg-del">Supprimer 🗑</div>' +
+      '<div class="history-item' + (isFav ? ' is-fav' : '') + '" data-rank="' + idx + '">' +
+        '<div class="history-item-body">' +
+          '<div class="history-quote">' + esc(quoteKey) + '</div>' +
+          '<div class="history-meta">' +
+            '<div class="history-author"><span class="history-author-arrow">></span>' + esc(name) + ' · ' + esc(loc) + catHtml + '</div>' +
+            timeHtml +
+          '</div>' +
         '</div>' +
       '</div>' +
-      '<button class="history-fav-btn' + (isFav ? ' active' : '') + '" data-fav="' + idx + '" aria-label="Favori"><span class="fav-icon">' + (isFav ? '♥️' : '📌') + '</span></button>' +
     '</div>';
   }).join('');
 
   list.innerHTML = html;
 
-  // Event delegation — single listener on the list
+  // Tap to view quote
   list.onclick = (e) => {
-    const favBtn = e.target.closest('[data-fav]');
-    if (favBtn) {
-      e.stopPropagation();
-      const idx = parseInt(favBtn.dataset.fav);
-      const entry = App.sessionHistory[idx];
-      if (!entry) return;
-      const added = setFavorite(entry.q);
-      favBtn.innerHTML = '<span class="fav-icon">' + (added ? '♥️' : '📌') + '</span>';
-      favBtn.classList.toggle('active', added);
-      return;
-    }
-    const item = e.target.closest('[data-idx]');
-    if (item) {
-      const idx = parseInt(item.dataset.idx);
-      const entry = App.sessionHistory[idx];
-      if (!entry) return;
-      displayQuote(entry.q);
-      navigate('quote');
-    }
+    const wrapper = e.target.closest('[data-idx]');
+    if (!wrapper) return;
+    const idx = parseInt(wrapper.dataset.idx);
+    const entry = App.sessionHistory[idx];
+    if (!entry) return;
+    displayQuote(entry.q);
+    navigate('quote');
   };
+
+  // Swipe handling
+  initHistorySwipe();
+}
+
+function initHistorySwipe() {
+  const list = document.getElementById('history-list');
+  let startX = 0, startY = 0, currentItem = null, swiping = false;
+
+  list.addEventListener('touchstart', (e) => {
+    const wrapper = e.target.closest('.history-swipe');
+    if (!wrapper) return;
+    currentItem = wrapper.querySelector('.history-item');
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    swiping = false;
+    currentItem.style.transition = 'none';
+  }, { passive: true });
+
+  list.addEventListener('touchmove', (e) => {
+    if (!currentItem) return;
+    const dx = e.touches[0].clientX - startX;
+    const dy = e.touches[0].clientY - startY;
+    // Only swipe if mostly horizontal
+    if (!swiping && Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+      swiping = true;
+    }
+    if (swiping) {
+      currentItem.style.transform = 'translateX(' + dx + 'px)';
+      e.preventDefault();
+    }
+  }, { passive: false });
+
+  list.addEventListener('touchend', (e) => {
+    if (!currentItem || !swiping) { currentItem = null; return; }
+    const dx = e.changedTouches[0].clientX - startX;
+    const wrapper = currentItem.closest('.history-swipe');
+    const idx = parseInt(wrapper.dataset.idx);
+    const threshold = 80;
+
+    if (dx > threshold) {
+      // Swipe right → toggle favorite
+      const entry = App.sessionHistory[idx];
+      if (entry) {
+        const added = setFavorite(entry.q);
+        currentItem.classList.toggle('is-fav', added);
+        showToast(added ? '♥️ Ajouté aux favoris' : '💔 Retiré des favoris');
+      }
+      currentItem.style.transition = 'transform 0.2s ease';
+      currentItem.style.transform = '';
+    } else if (dx < -threshold) {
+      // Swipe left → remove from history
+      currentItem.style.transition = 'transform 0.3s ease';
+      currentItem.style.transform = 'translateX(-120%)';
+      setTimeout(() => {
+        wrapper.classList.add('removing');
+        requestAnimationFrame(() => {
+          wrapper.classList.add('gone');
+          setTimeout(() => {
+            App.sessionHistory.splice(idx, 1);
+            localStorage.setItem('qapp_history', JSON.stringify(App.sessionHistory));
+            renderHistory();
+          }, 300);
+        });
+      }, 200);
+    } else {
+      // Snap back
+      currentItem.style.transition = 'transform 0.2s ease';
+      currentItem.style.transform = '';
+    }
+    currentItem = null;
+    swiping = false;
+  });
 }
 
 // ═══════════════════════════════════════════════
@@ -2315,32 +2464,47 @@ async function buildStats() {
 
   document.getElementById('stat-overview').innerHTML =
     '<div class="stat-mini hero"><div class="num">' + data.length + '</div><div class="lbl">Phrases au total</div></div>' +
-    '<div class="stat-mini"><div class="num" style="color:#4ade80">' + uniqAuthors + '</div><div class="lbl">Auteurs</div></div>' +
+    '<div class="stat-mini"><div class="num" style="color:#4ade80;font-size:18px">' + uniqAuthors + '</div><div class="lbl">Auteurs</div></div>' +
     '<div class="stat-mini"><div class="num" style="color:#fbbf24;font-size:14px">' + esc(topLocName) + '</div><div class="lbl">Top lieu</div></div>' +
     '<div class="stat-mini"><div class="num" style="color:#f472b6;font-size:14px">' + esc(topCatName) + '</div><div class="lbl">Catégorie #1</div></div>';
 
-  // ── FUN FACTS ──
-  // Auteur le plus alcoolisé
-  const alcByAuthor = {};
-  data.forEach(q => {
-    const n = getCol(q,COL.name), a = getCol(q,COL.alcohol);
-    if (isValid(n) && /oui|yes|true/i.test(a)) alcByAuthor[n] = (alcByAuthor[n]||0)+1;
+  // ── PHRASE DU JOUR ──
+  // Find quotes said on the same day-of-year (month+day) as today
+  const today = new Date();
+  const todayMonth = today.getMonth();
+  const todayDate = today.getDate();
+  const dailyQuotes = data.filter(q => {
+    const d = parseDate(getCol(q, COL.ts));
+    return d && d.getMonth() === todayMonth && d.getDate() === todayDate;
   });
-  const alcSorted = Object.entries(alcByAuthor).sort((a,b)=>b[1]-a[1]);
-  const topAlcName = alcSorted.length ? alcSorted[0][0] : '—';
-  const topAlcCount = alcSorted.length ? alcSorted[0][1] : 0;
 
-  // Jour de la semaine le plus actif
-  const dayNames = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
-  const dayCounts = Array(7).fill(0);
-  data.forEach(q => { const d = parseDate(getCol(q,COL.ts)); if(d) dayCounts[d.getDay()]++; });
-  const topDayIdx = dayCounts.indexOf(Math.max(...dayCounts));
-  const topDayName = dayCounts[topDayIdx] > 0 ? dayNames[topDayIdx] : '—';
-  const topDayCount = dayCounts[topDayIdx];
+  const dailyEl = document.getElementById('stat-daily');
+  if (dailyQuotes.length) {
+    // Pick one deterministically (based on day-of-year so it's stable all day)
+    const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / 86400000);
+    const pick = dailyQuotes[dayOfYear % dailyQuotes.length];
+    const qText = getCol(pick, COL.quote) || '';
+    const qName = getCol(pick, COL.name) || '?';
+    const qDate = getCol(pick, COL.ts) || '';
+    const parsedDate = parseDate(qDate);
+    const year = parsedDate ? parsedDate.getFullYear() : '';
 
-  document.getElementById('stat-fun').innerHTML =
-    '<div class="stat-mini"><div class="num" style="color:#fbbf24;font-size:14px">' + esc(topAlcName) + '</div><div class="lbl">🍺 + alcoolisé (' + topAlcCount + ')</div></div>' +
-    '<div class="stat-mini"><div class="num" style="color:#22d3ee;font-size:14px">' + esc(topDayName) + '</div><div class="lbl">📅 Jour + actif (' + topDayCount + ')</div></div>';
+    dailyEl.innerHTML =
+      '<div class="stat-daily-item" id="stat-daily-item">' +
+        '<div class="stat-daily-quote">' + esc(qText) + '</div>' +
+        '<div class="stat-daily-author">' + esc(qName) + (year ? ' <span>· ' + year + '</span>' : '') + '</div>' +
+      '</div>';
+
+    document.getElementById('stat-daily-item').onclick = () => {
+      displayQuote(pick);
+      navigate('quote');
+    };
+  } else {
+    dailyEl.innerHTML = '<div class="stat-daily-empty">' +
+      '<span>Aucune phrase un ' + todayDate + '/' + String(todayMonth + 1).padStart(2, '0') + '</span>' +
+      '<a href="sms:?body=💬 Nouvelle phrase pour our quotes !" class="daily-send-btn" style="text-decoration:none">J\'envoie une phrase 💬</a>' +
+    '</div>';
+  }
 
   // ── PERSONS — top 10 ──
   const personCounts = {};
