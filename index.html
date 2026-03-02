@@ -848,27 +848,6 @@
       transition: transform 0.2s ease, opacity 0.3s;
       touch-action: pan-y;
     }
-    /* Hiérarchie visuelle */
-    .history-item[data-rank="0"],
-    .history-item[data-rank="1"],
-    .history-item[data-rank="2"] { opacity: 1; }
-    .history-item[data-rank="3"],
-    .history-item[data-rank="4"],
-    .history-item[data-rank="5"] { opacity: 0.85; }
-    .history-item[data-rank="6"],
-    .history-item[data-rank="7"],
-    .history-item[data-rank="8"],
-    .history-item[data-rank="9"] { opacity: 0.7; }
-    .history-item[data-rank="10"],
-    .history-item[data-rank="11"],
-    .history-item[data-rank="12"],
-    .history-item[data-rank="13"],
-    .history-item[data-rank="14"] { opacity: 0.55; }
-    .history-item[data-rank="15"],
-    .history-item[data-rank="16"],
-    .history-item[data-rank="17"],
-    .history-item[data-rank="18"],
-    .history-item[data-rank="19"] { opacity: 0.42; }
     /* Premier item — accent border */
     .history-item[data-rank="0"] { border-color: rgba(124,106,247,0.3); }
     /* Favori — subtle left accent bar */
@@ -943,6 +922,212 @@
       0%, 100% { opacity: 0.3; transform: scale(1); }
       50% { opacity: 0.6; transform: scale(1.1); }
     }
+
+    /* ── GAME SCREEN — CodePet-inspired ── */
+    #screen-game {
+      padding: 0; gap: 0; display: flex; flex-direction: column;
+      overflow-y: auto; -webkit-overflow-scrolling: touch;
+    }
+    .game-inner { padding: 14px 16px 24px; display: flex; flex-direction: column; gap: 14px; }
+
+    /* Pet-style XP card */
+    .game-pet-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 20px; padding: 24px 20px 20px; text-align: center;
+      position: relative; overflow: hidden;
+    }
+    .game-pet-glow {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -60%);
+      width: 180px; height: 180px;
+      background: radial-gradient(circle, rgba(124,106,247,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .game-pet-emoji {
+      font-size: 56px; display: block; position: relative; z-index: 1;
+      transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .game-pet-emoji.bounce { transform: scale(1.25) rotate(-5deg); }
+    .game-xp-pop {
+      position: absolute; top: 14px; right: 16px;
+      background: var(--accent); color: #fff; border-radius: 20px;
+      padding: 3px 12px; font-family: var(--font-mono); font-size: 12px;
+      font-weight: 700; z-index: 10;
+      animation: xpFadeUp 1.4s ease forwards;
+    }
+    @keyframes xpFadeUp {
+      0% { opacity: 1; transform: translateY(0); }
+      100% { opacity: 0; transform: translateY(-28px); }
+    }
+    .game-rank-name {
+      font-family: var(--font-mono); font-size: 16px; font-weight: 700;
+      color: var(--accent); margin-top: 10px; letter-spacing: 0.5px;
+    }
+    .game-rank-desc {
+      font-family: var(--font-mono); font-size: 11px; color: var(--text-dim); margin-top: 3px;
+    }
+    .game-xp-section { margin-top: 14px; }
+    .game-xp-labels {
+      display: flex; justify-content: space-between;
+      font-family: var(--font-mono); font-size: 10px; color: var(--text-dim);
+      margin-bottom: 5px;
+    }
+    .game-xp-bar {
+      height: 7px; background: rgba(255,255,255,0.06);
+      border-radius: 4px; overflow: hidden;
+    }
+    .game-xp-fill {
+      height: 100%; border-radius: 4px;
+      background: linear-gradient(90deg, var(--accent), #f472b6);
+      transition: width 0.6s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .game-xp-percent {
+      font-family: var(--font-mono); font-size: 10px; color: #4ade80;
+      text-align: center; margin-top: 5px;
+    }
+
+    /* Stats row — 3 mini cards */
+    .game-stats-row { display: flex; gap: 10px; }
+    .game-stat-card {
+      flex: 1; background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; padding: 12px 8px; text-align: center;
+    }
+    .game-stat-val {
+      font-family: var(--font-mono); font-size: 20px; font-weight: 700; color: var(--text);
+    }
+    .game-stat-label {
+      font-family: var(--font-mono); font-size: 9px; letter-spacing: 2px;
+      text-transform: uppercase; color: var(--text-dim); margin-top: 2px;
+    }
+
+    /* Quote card — the challenge */
+    .game-challenge-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 20px; padding: 20px; position: relative;
+    }
+    .game-challenge-label {
+      font-family: var(--font-mono); font-size: 10px; letter-spacing: 3px;
+      text-transform: uppercase; color: var(--text-dim); margin-bottom: 14px;
+    }
+    .game-challenge-quote {
+      font-family: var(--font-body); font-size: 16px; font-weight: 300;
+      font-style: italic; color: var(--text); line-height: 1.65; margin-bottom: 16px;
+    }
+    .game-challenge-quote .game-blank {
+      color: var(--accent); border-bottom: 2px dashed var(--accent); padding: 0 6px;
+    }
+
+    /* Choices grid */
+    .game-choices { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .game-choice {
+      background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+      border-radius: 12px; padding: 14px 12px; cursor: pointer;
+      font-family: var(--font-mono); font-size: 12px; color: var(--text);
+      transition: all 0.15s; text-align: left;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .game-choice:active { transform: scale(0.96); }
+    .game-choice.correct { border-color: #4ade80; background: rgba(74,222,128,0.1); color: #4ade80; }
+    .game-choice.wrong { border-color: #ef4444; background: rgba(239,68,68,0.1); color: #ef4444; }
+    .game-choice.reveal { border-color: #4ade8066; color: #4ade80; }
+
+    /* Finish mode input */
+    .game-input-area { display: flex; gap: 8px; }
+    .game-input {
+      flex: 1; padding: 12px; border-radius: 12px;
+      border: 1px solid var(--border); background: rgba(255,255,255,0.03);
+      color: var(--text); font-family: var(--font-mono); font-size: 13px;
+      outline: none; -webkit-user-select: text; user-select: text;
+    }
+    .game-input:focus { border-color: var(--accent); }
+    .game-input::placeholder { color: var(--text-dim); }
+    .game-validate-btn {
+      padding: 12px 18px; border-radius: 12px;
+      border: 1px solid var(--accent); background: var(--accent-dim);
+      color: var(--accent); font-family: var(--font-mono); font-size: 11px;
+      cursor: pointer; white-space: nowrap;
+    }
+
+    /* Reveal zone */
+    .game-reveal { padding: 0; }
+    .game-result-badge {
+      text-align: center; font-family: var(--font-mono); font-size: 14px;
+      line-height: 1.6; margin-bottom: 14px; font-weight: 600;
+    }
+    .game-result-badge .answer { color: #4ade80; font-style: italic; font-weight: 400; }
+    .game-result-badge .label { color: var(--text-dim); font-weight: 400; }
+    .game-reveal-bottom {
+      border-top: 1px solid var(--border); padding-top: 10px;
+      display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px;
+    }
+    .game-next-btn {
+      width: 100%; padding: 0 14px; height: 44px;
+      border-radius: 12px; border: 1px solid var(--accent);
+      background: transparent; color: var(--accent);
+      font-family: var(--font-mono); font-size: 12px; font-weight: 600;
+      letter-spacing: 0.5px; cursor: pointer; transition: all 0.15s;
+    }
+    .game-next-btn:active { background: var(--accent); color: var(--bg); }
+
+    /* Log section */
+    .game-log-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 20px; padding: 16px 18px;
+    }
+    .game-log-title {
+      font-family: var(--font-mono); font-size: 10px; letter-spacing: 3px;
+      text-transform: uppercase; color: var(--text-dim); margin-bottom: 10px;
+    }
+    .game-log-empty {
+      font-family: var(--font-mono); font-size: 11px; color: var(--text-dim);
+      text-align: center; padding: 10px 0;
+    }
+    .game-log-item {
+      display: flex; align-items: center; gap: 8px;
+      padding: 7px 0; border-bottom: 1px solid var(--border);
+      font-family: var(--font-mono); font-size: 11px; color: var(--text);
+    }
+    .game-log-item:last-child { border-bottom: none; }
+    .game-log-item .log-icon { font-size: 14px; flex-shrink: 0; }
+    .game-log-item .log-author { color: var(--text-mid); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .game-log-item .log-xp { color: var(--accent); font-weight: 700; flex-shrink: 0; }
+    .game-log-item .log-time { color: var(--text-dim); font-size: 10px; flex-shrink: 0; }
+
+    /* Mode bar at bottom */
+    .game-mode-bar {
+      display: flex; gap: 0; flex-shrink: 0;
+      border-top: 1px solid var(--border);
+      padding: 8px 16px calc(8px + var(--safe-bottom));
+      background: rgba(13,15,26,0.92); backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
+    .game-mode-btn {
+      flex: 1; padding: 10px 12px;
+      border: 1px solid var(--border); background: var(--surface);
+      color: var(--text-dim); font-family: var(--font-mono); font-size: 11px;
+      cursor: pointer; transition: all 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .game-mode-btn:first-child { border-radius: 10px 0 0 10px; border-right: none; }
+    .game-mode-btn:last-child { border-radius: 0 10px 10px 0; }
+    .game-mode-btn.active {
+      border-color: var(--accent); color: var(--accent); background: var(--accent-dim);
+    }
+
+    /* ── SHARE BUTTON ── */
+    .btn-share {
+      width: 44px; height: 44px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: var(--surface);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+      -webkit-tap-highlight-color: transparent;
+      flex-shrink: 0;
+      transition: border-color 0.15s;
+    }
+    .btn-share:active { border-color: var(--accent); }
 
     /* ── BOTTOM NAV ── */
     .bottom-nav {
@@ -1464,6 +1649,142 @@
     }
 
 
+  
+    /* ── CONFETTI ── */
+    @keyframes confettiFall {
+      0% { transform: translateY(-10px) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(60px) rotate(720deg); opacity: 0; }
+    }
+    .confetti-container {
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      pointer-events: none; overflow: hidden; z-index: 10;
+    }
+    .confetti {
+      position: absolute; width: 8px; height: 8px; border-radius: 1px;
+      animation: confettiFall 1.2s ease-out forwards;
+    }
+
+    /* ── MICRO-INTERACTIONS ── */
+    .game-choice.correct { animation: correctPulse 0.4s ease; }
+    .game-choice.wrong { animation: wrongShake 0.3s ease; }
+    @keyframes correctPulse {
+      0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); }
+    }
+    @keyframes wrongShake {
+      0%,100% { transform: translateX(0); } 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); }
+    }
+
+    /* ══════════════════════════════════════════
+       THEME TOGGLE
+       ══════════════════════════════════════════ */
+    .btn-theme {
+      width: 32px; height: 32px; border-radius: 50%;
+      border: 1px solid var(--border); background: var(--surface);
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      font-size: 14px; flex-shrink: 0;
+      -webkit-tap-highlight-color: transparent;
+      transition: border-color 0.2s, transform 0.15s;
+    }
+    .btn-theme:active { transform: scale(0.88); }
+
+    /* ══════════════════════════════════════════
+       LIGHT THEME
+       ══════════════════════════════════════════ */
+    :root.light {
+      --bg: #f5f5f7;
+      --surface: #ffffff;
+      --border: #d2d2d7;
+      --text: #1d1d1f;
+      --text-mid: #6e6e73;
+      --text-dim: #aeaeb2;
+      --ink-light: rgba(0,0,0,0.03);
+      --border-glow: rgba(124,106,247,0.15);
+    }
+    :root.light body { background: var(--bg); }
+    :root.light .header { background: rgba(245,245,247,0.92); backdrop-filter: blur(20px); }
+    :root.light .bottom-nav { background: rgba(245,245,247,0.92); backdrop-filter: blur(20px); }
+    :root.light .bottom-bar { background: rgba(245,245,247,0.92); backdrop-filter: blur(20px); }
+    :root.light .filter-panel { background: var(--bg); }
+    :root.light .filter-overlay { background: rgba(0,0,0,0.25); }
+    :root.light .popup-overlay { background: rgba(0,0,0,0.3); }
+    :root.light .popup-card { background: var(--surface); box-shadow: 0 8px 40px rgba(0,0,0,0.12); }
+    :root.light .game-choice { background: var(--surface); border-color: var(--border); }
+    :root.light .game-input { background: var(--surface); border-color: var(--border); color: var(--text); }
+    :root.light .game-pet-card { background: var(--surface); }
+    :root.light .game-stat-card { background: var(--surface); }
+    :root.light .game-challenge-card { background: var(--surface); }
+    :root.light .game-log-card { background: var(--surface); }
+    :root.light .game-mode-bar { background: rgba(245,245,247,0.92); }
+    :root.light .game-mode-btn { background: var(--surface); }
+    :root.light .game-xp-bar { background: rgba(0,0,0,0.05); }
+    :root.light .stats-card { background: var(--surface); }
+    :root.light .stat-mini { background: var(--surface); }
+    :root.light .quote-mark { color: var(--border); }
+    :root.light .history-item { background: var(--surface); }
+    :root.light .chip { background: var(--surface); border-color: var(--border); }
+    :root.light .chip.active { background: var(--accent-dim); }
+    :root.light .toast { background: var(--surface); color: var(--text); box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+    :root.light .modal-content { background: var(--surface); }
+    :root.light .fav-item { background: var(--surface); }
+
+    /* ══════════════════════════════════════════
+       ONBOARDING
+       ══════════════════════════════════════════ */
+    .onboard-overlay {
+      position: fixed; inset: 0; z-index: 200;
+      background: rgba(0,0,0,0.72);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; visibility: hidden;
+      transition: opacity 0.3s, visibility 0.3s;
+      padding: 24px;
+    }
+    .onboard-overlay.show { opacity: 1; visibility: visible; }
+    .onboard-card {
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 16px; padding: 30px 24px 20px;
+      max-width: 320px; width: 100%; text-align: center;
+      transform: translateY(12px); opacity: 0;
+      transition: transform 0.35s ease, opacity 0.35s ease;
+    }
+    .onboard-overlay.show .onboard-card { transform: translateY(0); opacity: 1; }
+    .onboard-icon {
+      font-size: 40px; margin-bottom: 14px;
+      animation: onboardBounce 0.5s ease 0.3s both;
+    }
+    @keyframes onboardBounce {
+      0% { transform: scale(0.5); opacity: 0; }
+      60% { transform: scale(1.15); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .onboard-title {
+      font-family: var(--font-mono); font-size: 14px; font-weight: 600;
+      color: var(--accent); margin-bottom: 8px;
+    }
+    .onboard-text {
+      font-family: var(--font-body); font-size: 13px;
+      color: var(--text-mid); line-height: 1.65;
+    }
+    .onboard-dots { display: flex; gap: 6px; justify-content: center; margin: 18px 0 16px; }
+    .onboard-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--border); transition: background 0.25s, transform 0.25s;
+    }
+    .onboard-dot.active { background: var(--accent); transform: scale(1.3); }
+    .onboard-actions { display: flex; justify-content: space-between; align-items: center; }
+    .onboard-skip {
+      border: none; background: none; color: var(--text-dim);
+      font-family: var(--font-mono); font-size: 11px; cursor: pointer; padding: 8px 12px;
+    }
+    .onboard-skip:active { color: var(--text-mid); }
+    .onboard-next {
+      padding: 8px 20px; border-radius: var(--radius-sm);
+      border: 1px solid var(--accent); background: var(--accent-dim);
+      color: var(--accent); font-family: var(--font-mono); font-size: 11px;
+      cursor: pointer; transition: all 0.15s;
+    }
+    .onboard-icon, .onboard-title, .onboard-text { transition: opacity 0.18s ease; }
+    .onboard-next:active { background: var(--accent); color: var(--bg); }
+
   </style>
 </head>
 <body>
@@ -1477,6 +1798,9 @@
       <button class="btn-fav-header" id="btn-fav-header" onclick="openHistorySheet()" title="Mes favoris" aria-label="Ouvrir les favoris">
         <span class="btn-fav-header-label">Mes phrases préfs<span id="fav-count-badge"></span></span>
         <span class="btn-fav-header-icon">🤍</span>
+      </button>
+      <button class="btn-theme" id="btn-theme" onclick="toggleTheme()" title="Thème" aria-label="Changer le thème">
+        <span id="theme-icon">☀️</span>
       </button>
     </div>
   </header>
@@ -1530,6 +1854,7 @@
         <span class="fav-icon">📌</span>
       </button>
       <button class="btn-random" onclick="showRandom()" aria-label="Afficher une citation aléatoire">Ménestrel, une autre</button>
+      <button class="btn-share" onclick="shareQuote()" title="Partager" aria-label="Partager">↗</button>
       <button class="btn-filter-toggle" id="btn-filter-toggle" title="Filtres" aria-label="Ouvrir les filtres"><span class="filter-icon">🔍</span> <span class="filter-label">Filtrer</span></button>
     </div>
   </div>
@@ -1588,7 +1913,86 @@
     <div id="history-list"></div>
   </div>
 
-  </div><!-- /.screens-container -->
+  <!-- SCREEN : GAME -->
+  <div class="screen" id="screen-game">
+    <div class="game-inner" id="game-inner">
+
+      <!-- Pet XP card -->
+      <div class="game-pet-card" id="game-pet-card">
+        <div class="game-pet-glow"></div>
+        <span class="game-pet-emoji" id="game-pet-emoji">🥚</span>
+        <div class="game-rank-name" id="game-rank-name">Newbie</div>
+        <div class="game-rank-desc" id="game-rank-desc">Fais tes premiers pas !</div>
+        <div class="game-xp-section">
+          <div class="game-xp-labels">
+            <span id="game-xp-current">0 XP</span>
+            <span id="game-xp-target">50 XP pour Connaisseur</span>
+          </div>
+          <div class="game-xp-bar"><div class="game-xp-fill" id="game-xp-fill" style="width:0%"></div></div>
+          <div class="game-xp-percent" id="game-xp-percent">0%</div>
+        </div>
+      </div>
+
+      <!-- Stats row -->
+      <div class="game-stats-row">
+        <div class="game-stat-card">
+          <div class="game-stat-val" id="game-score">0</div>
+          <div class="game-stat-label">Score</div>
+        </div>
+        <div class="game-stat-card">
+          <div class="game-stat-val" style="color:#fbbf24" id="game-streak">0</div>
+          <div class="game-stat-label">Série 🔥</div>
+        </div>
+        <div class="game-stat-card">
+          <div class="game-stat-val" style="color:var(--accent)" id="game-best">0</div>
+          <div class="game-stat-label">Record ⭐</div>
+        </div>
+      </div>
+
+      <!-- Challenge card -->
+      <div class="game-challenge-card" id="game-challenge-card">
+        <div class="game-challenge-label" id="game-challenge-label">// qui a dit ?</div>
+        <div class="game-challenge-quote" id="game-quote"></div>
+        <!-- Answer zone -->
+        <div id="game-answer-zone">
+          <div class="game-choices" id="game-choices"></div>
+          <div class="game-input-area" id="game-input-area" style="display:none">
+            <input class="game-input" id="game-input" type="text" placeholder="Complétez la phrase..." autocomplete="off" />
+            <button class="game-validate-btn" id="game-validate-btn" onclick="gameCheckFinish(Game._hidden)">Valider</button>
+          </div>
+        </div>
+        <!-- Reveal zone -->
+        <div class="game-reveal" id="game-reveal" style="display:none">
+          <div class="game-result-badge" id="game-result"></div>
+          <div class="game-reveal-bottom">
+            <div class="quote-meta">
+              <div class="meta-author" id="game-detail-author"></div>
+              <div class="meta-secondary" id="game-detail-secondary"></div>
+            </div>
+            <div class="chips-row" id="game-chips-row"></div>
+            <div class="details-panel open" id="game-details-panel"></div>
+          </div>
+          <button class="game-next-btn" id="game-next" onclick="gameNext()">Une autre chef !</button>
+        </div>
+      </div>
+
+      <!-- Activity log -->
+      <div class="game-log-card">
+        <div class="game-log-title">// historique</div>
+        <div id="game-log-list">
+          <div class="game-log-empty">Aucune réponse encore. Lance-toi ! 🧠</div>
+        </div>
+      </div>
+
+    </div>
+    <!-- Mode bar -->
+    <div class="game-mode-bar">
+      <button class="game-mode-btn active" id="game-mode-who" onclick="setGameMode('who')">Qui a dit ?</button>
+      <button class="game-mode-btn" id="game-mode-finish" onclick="setGameMode('finish')">Finis la phrase</button>
+    </div>
+  </div>
+
+    </div><!-- /.screens-container -->
 
   <!-- BOTTOM NAV -->
   <nav class="bottom-nav" id="bottom-nav">
@@ -1597,6 +2001,9 @@
     </button>
     <button class="nav-btn" onclick="navigate('stats')" id="nav-stats" aria-label="Statistiques">
       <span class="nav-icon">📊</span>stats
+    </button>
+    <button class="nav-btn" onclick="navigate('game')" id="nav-game" aria-label="Jeu">
+      <span class="nav-icon">🧠</span>jeu
     </button>
     <button class="nav-btn" onclick="navigate('history')" id="nav-history" aria-label="Historique de session">
       <span class="nav-icon">💾</span>historique
@@ -1669,6 +2076,20 @@
 </div>
 
 <!-- TOAST -->
+<!-- ONBOARDING -->
+<div class="onboard-overlay" id="onboard-overlay">
+  <div class="onboard-card" id="onboard-card">
+    <div class="onboard-icon" id="onboard-icon"></div>
+    <div class="onboard-title" id="onboard-title"></div>
+    <div class="onboard-text" id="onboard-text"></div>
+    <div class="onboard-dots" id="onboard-dots"></div>
+    <div class="onboard-actions">
+      <button class="onboard-skip" onclick="endOnboarding()">Passer</button>
+      <button class="onboard-next" id="onboard-next" onclick="nextOnboardStep()">Suivant →</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <!-- POPUP: CODE D'ACCES -->
@@ -1889,6 +2310,7 @@ function navigate(screen) {
 
   if (screen === 'stats') buildStats();
   if (screen === 'history') renderHistory();
+  if (screen === 'game') initGame();
 }
 
 // ═══════════════════════════════════════════════
@@ -2961,6 +3383,361 @@ function showToast(msg) {
 }
 
 // ═══════════════════════════════════════════════
+//  WEB SHARE API
+// ═══════════════════════════════════════════════
+function shareQuote() {
+  if (!App.currentQuote) return;
+  const q = App.currentQuote;
+  const text = '« ' + getCol(q, COL.quote) + ' »';
+  const author = getCol(q, COL.name);
+  const loc = getCol(q, COL.location);
+  const full = text + '\n— ' + author + (loc ? ' · ' + loc : '');
+
+  if (navigator.share) {
+    navigator.share({ title: 'Our Quotes', text: full }).catch(() => {});
+  } else {
+    navigator.clipboard.writeText(full).then(() => {
+      showToast('📋 Copié dans le presse-papier');
+    }).catch(() => {
+      showToast('Impossible de copier');
+    });
+  }
+}
+
+// ═══════════════════════════════════════════════
+
+function spawnConfetti(container) {
+  const colors = ['#7c6af7','#4ade80','#fbbf24','#f472b6','#22d3ee','#ef4444'];
+  const el = document.createElement('div');
+  el.className = 'confetti-container';
+  for (let i = 0; i < 20; i++) {
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    c.style.left = (10 + Math.random() * 80) + '%';
+    c.style.top = (10 + Math.random() * 30) + '%';
+    c.style.background = colors[Math.floor(Math.random() * colors.length)];
+    c.style.animationDelay = (Math.random() * 0.3) + 's';
+    el.appendChild(c);
+  }
+  container.style.position = 'relative';
+  container.appendChild(el);
+  setTimeout(() => el.remove(), 1500);
+}
+
+//  GAME ENGINE
+// ═══════════════════════════════════════════════
+const GAME_RANKS = [
+  { name: 'Newbie', minXP: 0, emoji: '\ud83e\udd5a', desc: 'Fais tes premiers pas !' },
+  { name: 'Connaisseur', minXP: 50, emoji: '\ud83d\udc23', desc: 'Tu commences \u00e0 conna\u00eetre tes potes !' },
+  { name: 'Expert', minXP: 150, emoji: '\ud83e\uddd0', desc: 'Rien ne t\u2019\u00e9chappe !' },
+  { name: 'Ma\u00eetre', minXP: 350, emoji: '\ud83e\udd85', desc: 'Tu es inarr\u00eatable !' },
+  { name: 'L\u00e9gende', minXP: 700, emoji: '\ud83d\udc51', desc: 'L\u00e9gendaire. M\u00e9moire absolue.' },
+];
+
+function getGameRank(xp) {
+  var r = GAME_RANKS[0];
+  for (var i = 0; i < GAME_RANKS.length; i++) { if (xp >= GAME_RANKS[i].minXP) r = GAME_RANKS[i]; }
+  return r;
+}
+function getNextRank(xp) {
+  for (var i = 0; i < GAME_RANKS.length; i++) { if (xp < GAME_RANKS[i].minXP) return GAME_RANKS[i]; }
+  return null;
+}
+
+const Game = {
+  mode: 'who',
+  score: 0,
+  streak: 0,
+  best: parseInt(localStorage.getItem('qapp_game_best') || '0'),
+  xp: parseInt(localStorage.getItem('qapp_game_xp') || '0'),
+  currentAnswer: null,
+  answered: false,
+  log: [],
+};
+
+function setGameMode(mode) {
+  Game.mode = mode;
+  document.getElementById('game-mode-who').classList.toggle('active', mode === 'who');
+  document.getElementById('game-mode-finish').classList.toggle('active', mode === 'finish');
+  document.getElementById('game-challenge-label').textContent = mode === 'who' ? '// qui a dit ?' : '// finis la phrase';
+  Game.score = 0;
+  Game.streak = 0;
+  updateGameUI();
+  gameNext();
+}
+
+function updateGameUI() {
+  document.getElementById('game-score').textContent = Game.score;
+  document.getElementById('game-streak').textContent = Game.streak;
+  document.getElementById('game-best').textContent = Game.best;
+
+  // Rank system
+  var rank = getGameRank(Game.xp);
+  var next = getNextRank(Game.xp);
+  document.getElementById('game-pet-emoji').textContent = rank.emoji;
+  document.getElementById('game-rank-name').textContent = rank.name;
+  document.getElementById('game-rank-desc').textContent = rank.desc;
+  document.getElementById('game-xp-current').textContent = Game.xp + ' XP';
+
+  if (next) {
+    var pct = Math.round(((Game.xp - rank.minXP) / (next.minXP - rank.minXP)) * 100);
+    document.getElementById('game-xp-target').textContent = next.minXP + ' XP pour ' + next.name;
+    document.getElementById('game-xp-fill').style.width = pct + '%';
+    document.getElementById('game-xp-percent').textContent = pct + '% vers ' + next.name;
+  } else {
+    document.getElementById('game-xp-target').textContent = 'RANG MAX \ud83c\udf89';
+    document.getElementById('game-xp-fill').style.width = '100%';
+    document.getElementById('game-xp-percent').textContent = 'MAX LEVEL \ud83c\udf89';
+  }
+}
+
+function addGameXP(amount, isCorrect) {
+  Game.xp += amount;
+  localStorage.setItem('qapp_game_xp', String(Game.xp));
+
+  // XP pop animation
+  var old = document.querySelector('.game-xp-pop');
+  if (old) old.remove();
+  var pop = document.createElement('div');
+  pop.className = 'game-xp-pop';
+  pop.textContent = '+' + amount + ' XP';
+  document.getElementById('game-pet-card').appendChild(pop);
+  setTimeout(function() { pop.remove(); }, 1500);
+
+  // Bounce emoji
+  var emoji = document.getElementById('game-pet-emoji');
+  emoji.classList.add('bounce');
+  setTimeout(function() { emoji.classList.remove('bounce'); }, 500);
+
+  updateGameUI();
+}
+
+function addGameLog(icon, text, xp) {
+  var now = new Date();
+  var time = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+  Game.log.unshift({ icon: icon, text: text, xp: xp, time: time });
+  if (Game.log.length > 8) Game.log.pop();
+  renderGameLog();
+}
+
+function renderGameLog() {
+  var container = document.getElementById('game-log-list');
+  if (Game.log.length === 0) {
+    container.innerHTML = '<div class="game-log-empty">Aucune r\u00e9ponse encore. Lance-toi ! \ud83e\udde0</div>';
+    return;
+  }
+  container.innerHTML = Game.log.map(function(item) {
+    return '<div class="game-log-item">'
+      + '<span class="log-icon">' + item.icon + '</span>'
+      + '<span class="log-author">' + esc(item.text) + '</span>'
+      + '<span class="log-xp">+' + item.xp + '</span>'
+      + '<span class="log-time">' + item.time + '</span>'
+      + '</div>';
+  }).join('');
+}
+
+function gameNext() {
+  Game.answered = false;
+  document.getElementById('game-reveal').style.display = 'none';
+  document.getElementById('game-answer-zone').style.display = '';
+  document.getElementById('game-result').innerHTML = '';
+  document.getElementById('game-detail-author').textContent = '';
+  document.getElementById('game-detail-secondary').innerHTML = '';
+  document.getElementById('game-chips-row').innerHTML = '';
+  document.getElementById('game-details-panel').innerHTML = '';
+
+  if (!App.allQuotes || App.allQuotes.length < 4) {
+    document.getElementById('game-quote').textContent = 'Pas assez de phrases pour jouer.';
+    return;
+  }
+
+  var pool = App.filteredQuotes.length >= 4 ? App.filteredQuotes : App.allQuotes;
+  var idx = Math.floor(Math.random() * pool.length);
+  var q = pool[idx];
+  Game.currentAnswer = q;
+
+  if (Game.mode === 'who') { buildWhoRound(q, pool); }
+  else { buildFinishRound(q); }
+
+  // Scroll to challenge card
+  var card = document.getElementById('game-challenge-card');
+  if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function buildWhoRound(q, pool) {
+  document.getElementById('game-quote').textContent = getCol(q, COL.quote);
+  document.getElementById('game-choices').style.display = '';
+  document.getElementById('game-input-area').style.display = 'none';
+
+  var correctAuthor = getCol(q, COL.name);
+  var allAuthors = [...new Set(pool.map(function(r) { return getCol(r, COL.name); }).filter(Boolean))];
+  var wrongAuthors = allAuthors.filter(function(a) { return a !== correctAuthor; });
+  for (var i = wrongAuthors.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = wrongAuthors[i]; wrongAuthors[i] = wrongAuthors[j]; wrongAuthors[j] = tmp;
+  }
+  var choices = [correctAuthor].concat(wrongAuthors.slice(0, 3));
+  for (var i = choices.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = choices[i]; choices[i] = choices[j]; choices[j] = tmp;
+  }
+
+  document.getElementById('game-choices').innerHTML = choices.map(function(a) {
+    return '<button class="game-choice" data-author="' + esc(a) + '" onclick="gameAnswer(this)">' + esc(a) + '</button>';
+  }).join('');
+}
+
+function buildGameReveal(q, resultHtml) {
+  document.getElementById('game-result').innerHTML = resultHtml;
+  document.getElementById('game-detail-author').textContent = getCol(q, COL.name);
+
+  var loc = getCol(q, COL.location);
+  var date = formatDate(getCol(q, COL.ts));
+  var secEl = document.getElementById('game-detail-secondary');
+  secEl.innerHTML = '';
+  if (loc) { var s1 = document.createElement('span'); s1.textContent = loc; secEl.appendChild(s1); }
+  if (date) { var s2 = document.createElement('span'); s2.textContent = date; secEl.appendChild(s2); }
+
+  var chipRow = document.getElementById('game-chips-row');
+  chipRow.innerHTML = '';
+  var vol = getCol(q, COL.volume);
+  if (vol) {
+    var bv = document.createElement('span');
+    bv.className = 'info-badge vol-badge'; bv.textContent = '\ud83d\udcda ' + vol;
+    chipRow.appendChild(bv);
+  }
+
+  var panel = document.getElementById('game-details-panel');
+  panel.innerHTML = '';
+  var mainCat = getCol(q, COL.mainCat);
+  var secondCat = getCol(q, COL.secondCat);
+  var alcohol = getCol(q, COL.alcohol);
+  var ctx = getCol(q, COL.context);
+
+  if (mainCat || alcohol) {
+    var badgeRow = document.createElement('div');
+    badgeRow.className = 'chips-row'; badgeRow.style.marginBottom = '8px';
+    if (mainCat) {
+      var bc = document.createElement('span');
+      bc.className = 'info-badge cat-badge'; bc.textContent = mainCat + (secondCat ? ' \u00b7 ' + secondCat : '');
+      badgeRow.appendChild(bc);
+    }
+    if (alcohol) {
+      var isYes = /oui|yes|true/i.test(alcohol);
+      var ba = document.createElement('span');
+      ba.className = 'info-badge alc-badge ' + (isYes ? 'yes' : 'no');
+      ba.textContent = isYes ? '\ud83c\udf7a avec alcool' : '\ud83c\udf43 sans alcool';
+      badgeRow.appendChild(ba);
+    }
+    panel.appendChild(badgeRow);
+  }
+  if (ctx) {
+    var r = document.createElement('div');
+    r.className = 'detail-row';
+    r.innerHTML = '<span class="detail-label">Contexte</span><span class="detail-value">' + esc(ctx) + '</span>';
+    panel.appendChild(r);
+  }
+
+  document.getElementById('game-answer-zone').style.display = 'none';
+  document.getElementById('game-reveal').style.display = '';
+  updateGameUI();
+}
+
+function gameAnswer(btn) {
+  if (Game.answered) return;
+  Game.answered = true;
+
+  var selected = btn.dataset.author;
+  var correct = getCol(Game.currentAnswer, COL.name);
+  var isCorrect = selected === correct;
+  var xpGained = 0;
+
+  if (isCorrect) {
+    btn.classList.add('correct');
+    Game.score++; Game.streak++;
+    if (Game.streak > Game.best) { Game.best = Game.streak; localStorage.setItem('qapp_game_best', String(Game.best)); }
+    var gc = document.querySelector('.game-pet-card'); if (gc) spawnConfetti(gc);
+    xpGained = 10 + Math.min(Game.streak * 2, 20);
+    addGameXP(xpGained, true);
+    addGameLog('\u2705', correct, xpGained);
+  } else {
+    btn.classList.add('wrong');
+    Game.streak = 0;
+    document.querySelectorAll('.game-choice').forEach(function(b) {
+      if (b.dataset.author === correct) b.classList.add('reveal');
+    });
+    addGameLog('\u274c', correct, 0);
+  }
+
+  var resultHtml = isCorrect
+    ? '<span style="color:#4ade80">\u2713 Bien jou\u00e9 !</span>'
+    : '<span style="color:#ef4444">\u2717 Rat\u00e9 !</span>';
+  setTimeout(function() { buildGameReveal(Game.currentAnswer, resultHtml); }, 600);
+}
+
+function buildFinishRound(q) {
+  var quoteText = getCol(q, COL.quote);
+  var words = quoteText.split(/\s+/);
+  var showCount = Math.max(2, Math.ceil(words.length * 0.55));
+  var shown = words.slice(0, showCount).join(' ');
+  var hidden = words.slice(showCount).join(' ');
+  Game._hidden = hidden;
+
+  document.getElementById('game-quote').innerHTML = esc(shown) + ' <span class="game-blank">\u2026</span>';
+  document.getElementById('game-choices').style.display = 'none';
+  document.getElementById('game-input-area').style.display = '';
+
+  var input = document.getElementById('game-input');
+  input.value = '';
+  input.placeholder = 'Compl\u00e9tez la phrase...';
+  input.onkeydown = function(e) {
+    if (e.key === 'Enter' && !Game.answered) gameCheckFinish(hidden);
+  };
+}
+
+function gameCheckFinish(correct) {
+  if (Game.answered) return;
+  Game.answered = true;
+
+  var userAnswer = document.getElementById('game-input').value.trim().toLowerCase();
+  var correctLower = correct.toLowerCase();
+
+  var correctWords = correctLower.split(/\s+/);
+  var userWords = userAnswer.split(/\s+/);
+  var matches = 0;
+  correctWords.forEach(function(w) {
+    if (userWords.some(function(uw) { return uw === w || (w.length > 3 && uw.includes(w.substring(0, Math.ceil(w.length * 0.7)))); })) matches++;
+  });
+  var ratio = correctWords.length > 0 ? matches / correctWords.length : 0;
+  var isCorrect = ratio >= 0.5;
+  var author = getCol(Game.currentAnswer, COL.name);
+  var xpGained = 0;
+
+  if (isCorrect) {
+    Game.score++; Game.streak++;
+    if (Game.streak > Game.best) { Game.best = Game.streak; localStorage.setItem('qapp_game_best', String(Game.best)); }
+    var gc2 = document.querySelector('.game-pet-card'); if (gc2) spawnConfetti(gc2);
+    xpGained = 15 + Math.min(Game.streak * 2, 20);
+    addGameXP(xpGained, true);
+    addGameLog('\u2705', author, xpGained);
+    document.getElementById('game-result').innerHTML = '<span style="color:#4ade80">\u2713 Bien jou\u00e9 !</span><br><span class="label">R\u00e9ponse :</span> <span class="answer">' + esc(correct) + '</span>';
+  } else {
+    Game.streak = 0;
+    addGameLog('\u274c', author, 0);
+    document.getElementById('game-result').innerHTML = '<span style="color:#ef4444">\u2717 Pas tout \u00e0 fait</span><br><span class="label">R\u00e9ponse :</span> <span class="answer">' + esc(correct) + '</span>';
+  }
+
+  document.getElementById('game-quote').textContent = getCol(Game.currentAnswer, COL.quote);
+  buildGameReveal(Game.currentAnswer, document.getElementById('game-result').innerHTML);
+}
+
+function initGame() {
+  updateGameUI();
+  renderGameLog();
+  if (!Game.currentAnswer) gameNext();
+}
+
+// ═══════════════════════════════════════════════
 //  POPUP QUEUE SYSTEM
 // ═══════════════════════════════════════════════
 const APP_VERSION = '3';
@@ -3085,6 +3862,88 @@ function initInstallPopup() {
 }
 
 // ═══════════════════════════════════════════════
+//  THEME TOGGLE
+// ═══════════════════════════════════════════════
+function applyTheme(theme) {
+  const root = document.documentElement;
+  if (theme === 'light') {
+    root.classList.add('light');
+    const ic = document.getElementById('theme-icon');
+    if (ic) ic.textContent = '🌙';
+    const mc = document.querySelector('meta[name="theme-color"]');
+    if (mc) mc.content = '#f5f5f7';
+  } else {
+    root.classList.remove('light');
+    const ic = document.getElementById('theme-icon');
+    if (ic) ic.textContent = '☀️';
+    const mc = document.querySelector('meta[name="theme-color"]');
+    if (mc) mc.content = '#0d0f1a';
+  }
+}
+function toggleTheme() {
+  const isLight = document.documentElement.classList.contains('light');
+  const next = isLight ? 'dark' : 'light';
+  localStorage.setItem('qapp_theme', next);
+  applyTheme(next);
+}
+// Apply saved theme on load
+(function() {
+  const saved = localStorage.getItem('qapp_theme');
+  if (saved) applyTheme(saved);
+})();
+
+// ═══════════════════════════════════════════════
+//  ONBOARDING
+// ═══════════════════════════════════════════════
+const ONBOARD_STEPS = [
+  { icon: '👋', title: 'Bienvenue !', text: 'Our Quotes est ta collection de phrases mémorables. Voici un petit tour.' },
+  { icon: '🎲', title: 'Phrases aléatoires', text: 'Appuie sur « Ménestrel, une autre » ou swipe pour découvrir une phrase au hasard.' },
+  { icon: '📌', title: 'Favoris', text: 'Épingle tes phrases préférées avec 📌 et retrouve-les via 🤍 en haut.' },
+  { icon: '🔍', title: 'Filtres', text: 'Filtre par auteur, catégorie, lieu, volume… pour cibler tes recherches.' },
+  { icon: '📊', title: 'Stats', text: 'Top auteurs, catégories, timeline et phrase du jour dans l\'onglet stats.' },
+  { icon: '🧠', title: 'Le Jeu', text: '« Qui a dit ? » et « Finis la phrase » — teste ta mémoire !' },
+  { icon: '↗', title: 'Partager', text: 'Partage tes quotes favorites en un tap avec le bouton ↗.' },
+  { icon: '☀️', title: 'Thème', text: 'Bascule entre mode sombre et clair avec le bouton en haut.' },
+];
+let onboardStep = 0;
+
+function startOnboarding() {
+  if (localStorage.getItem('qapp_onboarded')) return;
+  onboardStep = 0;
+  renderOnboardStep();
+  document.getElementById('onboard-overlay').classList.add('show');
+}
+function renderOnboardStep() {
+  const s = ONBOARD_STEPS[onboardStep];
+  document.getElementById('onboard-icon').textContent = s.icon;
+  document.getElementById('onboard-title').textContent = s.title;
+  document.getElementById('onboard-text').textContent = s.text;
+  const dots = document.getElementById('onboard-dots');
+  dots.innerHTML = ONBOARD_STEPS.map((_, i) =>
+    '<div class="onboard-dot' + (i === onboardStep ? ' active' : '') + '"></div>'
+  ).join('');
+  document.getElementById('onboard-next').textContent =
+    onboardStep === ONBOARD_STEPS.length - 1 ? 'C\'est parti ! 🎉' : 'Suivant →';
+}
+function nextOnboardStep() {
+  onboardStep++;
+  if (onboardStep >= ONBOARD_STEPS.length) { endOnboarding(); return; }
+  ['onboard-icon','onboard-title','onboard-text'].forEach(function(id) {
+    document.getElementById(id).style.opacity = '0';
+  });
+  setTimeout(function() {
+    renderOnboardStep();
+    ['onboard-icon','onboard-title','onboard-text'].forEach(function(id) {
+      document.getElementById(id).style.opacity = '1';
+    });
+  }, 180);
+}
+function endOnboarding() {
+  localStorage.setItem('qapp_onboarded', '1');
+  document.getElementById('onboard-overlay').classList.remove('show');
+}
+
+// ═══════════════════════════════════════════════
 //  INIT
 // ═══════════════════════════════════════════════
 window.addEventListener('DOMContentLoaded', () => {
@@ -3118,6 +3977,9 @@ window.addEventListener('DOMContentLoaded', () => {
 
   // 3. Install prompt (delayed 5s, added to queue after code/update)
   setTimeout(() => initInstallPopup(), 5000);
+
+  // 4. Onboarding (first visit, after popups)
+  setTimeout(() => startOnboarding(), 1500);
 
   // Raccourci clavier : espace / entrée → phrase suivante
   document.addEventListener('keydown', e => {
